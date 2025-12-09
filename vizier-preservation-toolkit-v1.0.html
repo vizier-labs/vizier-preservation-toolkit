@@ -1,0 +1,2049 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vizier Preservation Toolkit</title>
+    
+    <!-- Suppress Tailwind CDN warning -->
+    <script>
+        // Override console.warn temporarily to suppress Tailwind's production warning
+        (function() {
+            const originalWarn = console.warn;
+            console.warn = function(...args) {
+                const msg = args[0];
+                if (typeof msg === 'string' && msg.includes('cdn.tailwindcss.com should not be used in production')) {
+                    return; // Suppress this specific warning
+                }
+                originalWarn.apply(console, args);
+            };
+        })();
+    </script>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for better UX */
+        .checkpoint-card {
+            transition: all 0.2s ease;
+        }
+        .checkpoint-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .section-check {
+            display: inline-block;
+            margin-right: 0.5rem;
+        }
+        
+        /* Watermark */
+        .vizier-watermark {
+            position: fixed;
+            bottom: 16px;
+            right: 16px;
+            width: 140px;
+            height: 140px;
+            opacity: 0.10;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        /* Restoration button on cards */
+        .btn-restore-card {
+            font-size: 0.875rem;
+            padding: 0.375rem 0.75rem;
+            background-color: #10b981;
+            color: white;
+            border-radius: 0.375rem;
+            transition: background-color 0.2s;
+        }
+        .btn-restore-card:hover {
+            background-color: #059669;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    
+    <!-- Header -->
+    <header class="bg-indigo-600 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-6">
+            <h1 class="text-3xl font-bold">Vizier Preservation Toolkit</h1>
+            <p class="text-indigo-100 mt-1">State Ledger & Artifact Registry for AI Projects</p>
+            
+            <!-- Tab Navigation with Info Button -->
+            <div class="flex justify-between items-center mt-4 border-b border-indigo-500">
+                <div class="flex gap-4">
+                    <button onclick="switchTab('checkpoints')" 
+                            id="tabCheckpoints"
+                            class="tab-button pb-2 px-4 border-b-2 border-white font-semibold">
+                        State Ledger
+                    </button>
+                    <button onclick="switchTab('artifacts')" 
+                            id="tabArtifacts"
+                            class="tab-button pb-2 px-4 border-b-2 border-transparent hover:border-indigo-300 transition">
+                        Artifact Registry
+                    </button>
+                </div>
+                <button onclick="showAboutModal()" 
+                        class="text-indigo-100 hover:text-white transition pb-2"
+                        title="About Vizier Systems">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                        <circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                        <text x="10" y="14" text-anchor="middle" font-size="12" font-family="Georgia, serif" font-style="italic" fill="currentColor">i</text>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="container mx-auto px-4 py-8">
+        
+        <!-- CHECKPOINTS TAB -->
+        <div id="checkpointsTab" class="tab-content">
+            <!-- Action Bar -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <div class="flex flex-wrap gap-4 items-center justify-between">
+                <div class="flex gap-4">
+                    <button onclick="showPromptGeneratorModal()" 
+                            class="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition font-semibold">
+                        ⚡ Generate Checkpoint Request
+                    </button>
+                    <button onclick="showSaveCheckpointModal()" 
+                            class="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition">
+                        + Save Checkpoint
+                    </button>
+                    <button onclick="showNewProjectModal()" 
+                            class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition">
+                        + New Project
+                    </button>
+                </div>
+                <div class="flex gap-4">
+                    <button onclick="exportData()" 
+                            class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition">
+                        Export All
+                    </button>
+                    <button onclick="showImportModal()" 
+                            class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition">
+                        Import
+                    </button>
+                </div>
+            </div>
+
+            <!-- Search Bar -->
+            <div class="mt-4">
+                <input type="text" 
+                       id="searchInput"
+                       placeholder="Search checkpoints..." 
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                       oninput="filterCheckpoints()">
+            </div>
+
+            <!-- Filters -->
+            <div class="mt-4 flex gap-4 items-center">
+                <label class="text-sm text-gray-600">Filter by project:</label>
+                <select id="projectFilter" 
+                        onchange="filterCheckpoints()"
+                        class="px-3 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                    <option value="">All Projects</option>
+                </select>
+                
+                <label class="text-sm text-gray-600 ml-4">Sort by:</label>
+                <select id="sortOrder" 
+                        onchange="filterCheckpoints()"
+                        class="px-3 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                    <option value="newest">Newest First</option>
+                    <option value="oldest">Oldest First</option>
+                    <option value="project">By Project</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Checkpoints List -->
+        <div id="checkpointsList" class="space-y-4">
+            <!-- Checkpoints will be rendered here -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="text-center py-16 hidden">
+            <div class="text-gray-400 text-6xl mb-4">📋</div>
+            <h3 class="text-xl font-semibold text-gray-700 mb-2">No Checkpoints Yet</h3>
+            <p class="text-gray-500 mb-6">Start by creating your first project and saving a checkpoint</p>
+            <button onclick="showNewProjectModal()" 
+                    class="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition">
+                Create Your First Project
+            </button>
+        </div>
+
+        </div>
+        <!-- END CHECKPOINTS TAB -->
+
+        <!-- ARTIFACTS TAB -->
+        <div id="artifactsTab" class="tab-content hidden">
+            
+            <!-- Action Bar -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <div class="flex flex-wrap gap-4 items-center justify-between">
+                    <div class="flex gap-4">
+                        <button onclick="showAddArtifactModal()" 
+                                class="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition">
+                            + Add Artifact
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Search Bar -->
+                <div class="mt-4">
+                    <input type="text" 
+                           id="artifactSearchInput"
+                           placeholder="Search artifacts..." 
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                           oninput="filterArtifacts()">
+                </div>
+
+                <!-- Filters -->
+                <div class="mt-4 flex gap-4 items-center">
+                    <label class="text-sm text-gray-600">Filter by project:</label>
+                    <select id="artifactProjectFilter" 
+                            onchange="filterArtifacts()"
+                            class="px-3 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                        <option value="">All Projects</option>
+                    </select>
+                    
+                    <label class="text-sm text-gray-600 ml-4">Type:</label>
+                    <select id="artifactTypeFilter" 
+                            onchange="filterArtifacts()"
+                            class="px-3 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                        <option value="">All Types</option>
+                        <option value="document">Documents</option>
+                        <option value="image">Images</option>
+                        <option value="data">Data/CSV</option>
+                        <option value="code">Code</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Artifacts List -->
+            <div id="artifactsList" class="space-y-4">
+                <!-- Artifacts will be rendered here -->
+            </div>
+
+            <!-- Empty State -->
+            <div id="artifactsEmptyState" class="text-center py-16 hidden">
+                <div class="text-gray-400 text-6xl mb-4">📎</div>
+                <h3 class="text-xl font-semibold text-gray-700 mb-2">No Artifacts Yet</h3>
+                <p class="text-gray-500 mb-6">Start tracking files used in your AI projects</p>
+                <button onclick="showAddArtifactModal()" 
+                        class="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition">
+                    Add Your First Artifact
+                </button>
+            </div>
+
+        </div>
+        <!-- END ARTIFACTS TAB -->
+
+    </div>
+
+    <!-- Modal: Add Artifact -->
+    <div id="addArtifactModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="p-6">
+                <h2 class="text-2xl font-bold mb-4">Add Artifact</h2>
+                <p class="text-gray-600 mb-6">Track files used in your AI projects</p>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Project</label>
+                        <select id="artifactProject" 
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                            <option value="">Select Project...</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Original Filename
+                            <span class="text-gray-500 text-xs">(The file you're tracking)</span>
+                        </label>
+                        <input type="text" 
+                               id="artifactOriginalName" 
+                               placeholder="e.g., IMG_0473.png or document.pdf"
+                               oninput="suggestArtifactName()"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Suggested Filename
+                            <span class="text-gray-500 text-xs">(Clear, versioned name)</span>
+                        </label>
+                        <input type="text" 
+                               id="artifactSuggestedName" 
+                               placeholder="e.g., ProjectName_Floorplan_v2.png"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                        <p class="text-xs text-gray-500 mt-1">
+                            Format: ProjectName_Description_v#.ext
+                        </p>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Description/Label
+                        </label>
+                        <input type="text" 
+                               id="artifactLabel" 
+                               placeholder="e.g., Kitchen floorplan final draft"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">File Type</label>
+                        <select id="artifactType" 
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                            <option value="document">Document (PDF, DOCX, TXT)</option>
+                            <option value="image">Image (PNG, JPG, SVG)</option>
+                            <option value="data">Data/Spreadsheet (CSV, XLSX)</option>
+                            <option value="code">Code (PY, JS, HTML)</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            External Path (Optional)
+                            <span class="text-gray-500 text-xs">(Where you keep this file)</span>
+                        </label>
+                        <input type="text" 
+                               id="artifactPath" 
+                               placeholder="e.g., /Users/me/Projects/Remodel/files/"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Link to Checkpoint (Optional)
+                        </label>
+                        <select id="artifactCheckpointLink" 
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                            <option value="">Not linked to any checkpoint</option>
+                        </select>
+                    </div>
+
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <h3 class="font-semibold text-blue-900 mb-2">💡 Tip: File Management</h3>
+                        <p class="text-sm text-blue-800">
+                            This tool tracks <strong>metadata only</strong> - it doesn't store your actual files. 
+                            Keep your files organized in a folder, and this tool helps you remember which files 
+                            go with which checkpoints.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="mt-6 flex gap-4 justify-end">
+                    <button onclick="closeAddArtifactModal()" 
+                            class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+                        Cancel
+                    </button>
+                    <button onclick="saveArtifact()" 
+                            class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
+                        Add Artifact
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Prompt Generator -->
+    <div id="promptGeneratorModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="p-6">
+                <h2 class="text-2xl font-bold mb-4">Generate Checkpoint Request</h2>
+                <p class="text-gray-600 mb-6">Generate the prompt to paste into your AI session</p>
+                
+                <div class="space-y-4">
+                    <!-- Checkpoint Type Selection -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-3">Checkpoint Type</label>
+                        <div class="space-y-2">
+                            <label class="flex items-start p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-indigo-500 transition">
+                                <input type="radio" name="checkpointType" value="master" checked 
+                                       onchange="updatePromptPreview()"
+                                       class="mt-1 mr-3">
+                                <div>
+                                    <div class="font-semibold text-gray-800">Master Checkpoint</div>
+                                    <div class="text-sm text-gray-600">Full project state - use at major milestones</div>
+                                </div>
+                            </label>
+                            
+                            <label class="flex items-start p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-purple-500 transition">
+                                <input type="radio" name="checkpointType" value="task" 
+                                       onchange="updatePromptPreview()"
+                                       class="mt-1 mr-3">
+                                <div>
+                                    <div class="font-semibold text-gray-800">Task-Specific Checkpoint</div>
+                                    <div class="text-sm text-gray-600">Focused subtask - prevents token pollution in master session</div>
+                                </div>
+                            </label>
+                            
+                            <label class="flex items-start p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-green-500 transition">
+                                <input type="radio" name="checkpointType" value="integration" 
+                                       onchange="updatePromptPreview()"
+                                       class="mt-1 mr-3">
+                                <div>
+                                    <div class="font-semibold text-gray-800">Integration Checkpoint</div>
+                                    <div class="text-sm text-gray-600">Merge completed tasks back together</div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Project Selection -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Project</label>
+                        <select id="promptProjectSelect" 
+                                onchange="updatePromptPreview()"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                            <option value="">Select Project...</option>
+                        </select>
+                    </div>
+
+                    <!-- Task Focus (for task-specific checkpoints) -->
+                    <div id="taskFocusSection" class="hidden">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Task Focus
+                            <span class="text-gray-500 text-xs">(What is this session focused on?)</span>
+                        </label>
+                        <input type="text" 
+                               id="taskFocusInput" 
+                               placeholder="e.g., revising the introduction"
+                               onchange="updatePromptPreview()"
+                               oninput="updatePromptPreview()"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                        <p class="text-xs text-gray-500 mt-1">
+                            Be specific: "drafting API documentation" not just "API work"
+                        </p>
+                    </div>
+
+                    <!-- Task List (for integration checkpoints) -->
+                    <div id="taskListSection" class="hidden">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Tasks to Integrate
+                            <span class="text-gray-500 text-xs">(One per line)</span>
+                        </label>
+                        <textarea id="taskListInput" 
+                                  rows="4"
+                                  placeholder="API Overview revision&#10;Quick-Start guide rewrite&#10;Troubleshooting section"
+                                  onchange="updatePromptPreview()"
+                                  oninput="updatePromptPreview()"
+                                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"></textarea>
+                    </div>
+
+                    <!-- Generated Prompt Preview -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Generated Prompt
+                            <span class="text-gray-500 text-xs">(Copy this and paste into AI chat)</span>
+                        </label>
+                        <div class="bg-gray-50 border-2 border-indigo-200 rounded-lg p-4">
+                            <pre id="generatedPrompt" class="whitespace-pre-wrap font-mono text-sm text-gray-800"></pre>
+                        </div>
+                    </div>
+
+                    <!-- Instructions -->
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <h3 class="font-semibold text-blue-900 mb-2">📋 How to use:</h3>
+                        <ol class="text-sm text-blue-800 space-y-1 list-decimal list-inside">
+                            <li>Copy the generated prompt below</li>
+                            <li>Open a <strong>new AI chat session</strong></li>
+                            <li>Paste the prompt</li>
+                            <li>AI will generate your checkpoint</li>
+                            <li>Come back here and click "Save Checkpoint" to store it</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="mt-6 flex gap-4 justify-end">
+                    <button onclick="closePromptGeneratorModal()" 
+                            class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+                        Cancel
+                    </button>
+                    <button onclick="copyGeneratedPrompt()" 
+                            class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
+                        📋 Copy Prompt
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Save Checkpoint -->
+    <div id="saveCheckpointModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="p-6">
+                <h2 class="text-2xl font-bold mb-4">Save Checkpoint</h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Project</label>
+                        <select id="checkpointProject" 
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                            <option value="">Select Project...</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Checkpoint Content
+                            <span class="text-gray-500 text-xs">(Paste from AI)</span>
+                        </label>
+                        <textarea id="checkpointContent" 
+                                  rows="12"
+                                  placeholder="Paste your checkpoint from AI here..."
+                                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 font-mono text-sm"></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Label (Optional)
+                        </label>
+                        <input type="text" 
+                               id="checkpointLabel" 
+                               placeholder="e.g., After contractor quotes"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                    </div>
+
+                    <!-- Artifact Extraction Options -->
+                    <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" 
+                                   id="reviewArtifacts" 
+                                   checked
+                                   class="w-4 h-4 text-indigo-600 rounded focus:ring-2 focus:ring-indigo-500">
+                            <span class="text-sm font-medium text-gray-700">
+                                Review extracted artifacts before saving
+                            </span>
+                        </label>
+                        <p class="text-xs text-gray-600 mt-1 ml-6">
+                            Tool will extract files from "Files we used" section and let you approve them
+                        </p>
+                    </div>
+
+                    <!-- Extracted Artifacts Preview -->
+                    <div id="extractedArtifactsPreview" class="hidden">
+                        <div class="bg-white border-2 border-indigo-200 rounded-lg p-4">
+                            <h3 class="font-semibold text-sm mb-3 flex items-center gap-2">
+                                <span>📎</span>
+                                <span>Extracted Artifacts</span>
+                                <span id="artifactCount" class="text-xs text-gray-500"></span>
+                            </h3>
+                            <div id="extractedArtifactsList" class="space-y-2 max-h-48 overflow-y-auto">
+                                <!-- Artifacts will be listed here -->
+                            </div>
+                            <p class="text-xs text-gray-500 mt-2">
+                                ✓ Check to include | ✗ Uncheck to skip
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Validation Display -->
+                    <div id="validationResults" class="hidden">
+                        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                            <h3 class="font-semibold text-sm mb-2">Validation Results:</h3>
+                            <div id="validationDetails" class="text-sm space-y-1">
+                                <!-- Validation results will appear here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-6 flex gap-4 justify-end">
+                    <button onclick="closeSaveCheckpointModal()" 
+                            class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+                        Cancel
+                    </button>
+                    <button onclick="previewExtractedArtifacts()" 
+                            class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">
+                        Preview Artifacts
+                    </button>
+                    <button onclick="validateCheckpoint()" 
+                            class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                        Validate
+                    </button>
+                    <button onclick="saveCheckpoint()" 
+                            class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
+                        Save Checkpoint
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: New Project -->
+    <div id="newProjectModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
+            <div class="p-6">
+                <h2 class="text-2xl font-bold mb-4">New Project</h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Project Name</label>
+                        <input type="text" 
+                               id="newProjectName" 
+                               placeholder="e.g., Home Remodel"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                </div>
+
+                <div class="mt-6 flex gap-4 justify-end">
+                    <button onclick="closeNewProjectModal()" 
+                            class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+                        Cancel
+                    </button>
+                    <button onclick="createProject()" 
+                            class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+                        Create Project
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Import Data -->
+    <div id="importModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
+            <div class="p-6">
+                <h2 class="text-2xl font-bold mb-4">Import Data</h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Select JSON File</label>
+                        <input type="file" 
+                               id="importFile" 
+                               accept=".json"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                    </div>
+                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                        <p class="text-sm text-yellow-800">
+                            ⚠️ Warning: This will merge with existing data. Export current data first if needed.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="mt-6 flex gap-4 justify-end">
+                    <button onclick="closeImportModal()" 
+                            class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+                        Cancel
+                    </button>
+                    <button onclick="importData()" 
+                            class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
+                        Import
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: View Checkpoint -->
+    <div id="viewCheckpointModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="p-6">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <h2 class="text-2xl font-bold" id="viewCheckpointTitle">Checkpoint</h2>
+                        <p class="text-gray-500 text-sm mt-1" id="viewCheckpointMeta"></p>
+                    </div>
+                    <button onclick="closeViewCheckpointModal()" 
+                            class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
+                    <pre id="viewCheckpointContent" class="whitespace-pre-wrap font-mono text-sm text-gray-800"></pre>
+                </div>
+
+                <div class="flex gap-4 justify-end">
+                    <button onclick="generateRestorationPromptFromModal()" 
+                            class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+                        🔄 Generate Restoration Prompt
+                    </button>
+                    <button onclick="copyCheckpointToClipboard()" 
+                            class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
+                        📋 Copy to Clipboard
+                    </button>
+                    <button onclick="deleteCurrentCheckpoint()" 
+                            class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
+                        🗑️ Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===================================
+        // DATA STORAGE & STATE MANAGEMENT
+        // ===================================
+
+        const STORAGE_KEY = 'vizier_toolkit_data';
+        let currentData = null;
+        let currentViewingCheckpoint = null;
+
+        // Initialize data structure
+        function initData() {
+            const stored = localStorage.getItem(STORAGE_KEY);
+            if (stored) {
+                currentData = JSON.parse(stored);
+                // Ensure artifacts array exists
+                if (!currentData.artifacts) {
+                    currentData.artifacts = [];
+                }
+            } else {
+                currentData = {
+                    version: "1.0.0",
+                    projects: [],
+                    artifacts: []
+                };
+                saveData();
+            }
+        }
+
+        // Save data to localStorage
+        function saveData() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(currentData));
+        }
+
+        // Generate UUID
+        function generateId(prefix = 'id') {
+            return `${prefix}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        }
+
+        // ===================================
+        // PROMPT GENERATOR
+        // ===================================
+
+        const PROMPT_TEMPLATES = {
+            master: (projectName) => `Create a checkpoint that includes:
+- What we completed
+- The current plan
+- Important decisions
+- Files we used
+- What we do next`,
+
+            task: (taskFocus, projectName) => `Create a checkpoint for beginning the next session focused on ${taskFocus} that includes:
+- What we completed on ${taskFocus}
+- The current plan for ${taskFocus}
+- Important decisions related to ${taskFocus}
+- Files we used for ${taskFocus}
+- What we do next on ${taskFocus}
+
+This is a task-specific checkpoint scoped to: ${taskFocus}
+Parent project: ${projectName}`,
+
+            integration: (taskList, projectName) => {
+                const tasks = taskList.split('\n').filter(t => t.trim());
+                const taskListFormatted = tasks.map(t => `- ${t.trim()}`).join('\n');
+                const taskNames = tasks.map(t => t.trim()).join(', ');
+                
+                return `Create a checkpoint that integrates the following completed tasks:
+${taskListFormatted}
+
+Include:
+- What we completed across all integrated tasks
+- The current plan after integration
+- Important decisions from the merged work
+- Files we used across all tasks
+- What we do next with the integrated result
+
+This is an integration checkpoint merging: ${taskNames}
+Parent project: ${projectName}`;
+            }
+        };
+
+        function updatePromptPreview() {
+            const type = document.querySelector('input[name="checkpointType"]:checked').value;
+            const projectId = document.getElementById('promptProjectSelect').value;
+            const taskFocusSection = document.getElementById('taskFocusSection');
+            const taskListSection = document.getElementById('taskListSection');
+            const promptDisplay = document.getElementById('generatedPrompt');
+
+            // Show/hide relevant sections
+            taskFocusSection.classList.toggle('hidden', type !== 'task');
+            taskListSection.classList.toggle('hidden', type !== 'integration');
+
+            // Get project name
+            let projectName = 'Your Project';
+            if (projectId) {
+                const project = getProject(projectId);
+                if (project) projectName = project.name;
+            }
+
+            // Generate prompt based on type
+            let prompt = '';
+            
+            if (type === 'master') {
+                prompt = PROMPT_TEMPLATES.master(projectName);
+            } else if (type === 'task') {
+                const taskFocus = document.getElementById('taskFocusInput').value.trim() || '[task focus here]';
+                prompt = PROMPT_TEMPLATES.task(taskFocus, projectName);
+            } else if (type === 'integration') {
+                const taskList = document.getElementById('taskListInput').value.trim() || '[task list here]';
+                prompt = PROMPT_TEMPLATES.integration(taskList, projectName);
+            }
+
+            promptDisplay.textContent = prompt;
+        }
+
+        function copyGeneratedPrompt() {
+            const prompt = document.getElementById('generatedPrompt').textContent;
+            
+            if (!prompt || prompt.includes('[') ) {
+                alert('Please fill in all required fields first');
+                return;
+            }
+
+            navigator.clipboard.writeText(prompt).then(() => {
+                showNotification('Prompt copied! Paste into AI chat session.', 'success');
+            }).catch(err => {
+                // Fallback
+                const textarea = document.createElement('textarea');
+                textarea.value = prompt;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                showNotification('Prompt copied! Paste into AI chat session.', 'success');
+            });
+        }
+
+        function showPromptGeneratorModal() {
+            const modal = document.getElementById('promptGeneratorModal');
+            const projectSelect = document.getElementById('promptProjectSelect');
+            
+            // Update project dropdown
+            projectSelect.innerHTML = '<option value="">Select Project...</option>';
+            currentData.projects.forEach(project => {
+                projectSelect.innerHTML += `<option value="${project.id}">${project.name}</option>`;
+            });
+
+            // Reset form
+            document.querySelector('input[name="checkpointType"][value="master"]').checked = true;
+            document.getElementById('taskFocusInput').value = '';
+            document.getElementById('taskListInput').value = '';
+            
+            modal.classList.remove('hidden');
+            
+            // Reset scroll position
+            const modalContent = modal.querySelector('.overflow-y-auto');
+            if (modalContent) modalContent.scrollTop = 0;
+            
+            updatePromptPreview();
+        }
+
+        function closePromptGeneratorModal() {
+            document.getElementById('promptGeneratorModal').classList.add('hidden');
+        }
+
+        // ===================================
+        // PROJECT MANAGEMENT
+        // ===================================
+
+        function createProject() {
+            const name = document.getElementById('newProjectName').value.trim();
+            if (!name) {
+                alert('Please enter a project name');
+                return;
+            }
+
+            const project = {
+                id: generateId('proj'),
+                name: name,
+                created: new Date().toISOString(),
+                checkpoints: []
+            };
+
+            currentData.projects.push(project);
+            saveData();
+            closeNewProjectModal();
+            updateProjectDropdowns();
+            renderCheckpoints();
+            showNotification('Project created successfully!', 'success');
+        }
+
+        function getProject(projectId) {
+            return currentData.projects.find(p => p.id === projectId);
+        }
+
+        function updateProjectDropdowns() {
+            const projectFilter = document.getElementById('projectFilter');
+            const checkpointProject = document.getElementById('checkpointProject');
+
+            // Update filter dropdown
+            projectFilter.innerHTML = '<option value="">All Projects</option>';
+            currentData.projects.forEach(project => {
+                projectFilter.innerHTML += `<option value="${project.id}">${project.name}</option>`;
+            });
+
+            // Update checkpoint save dropdown
+            checkpointProject.innerHTML = '<option value="">Select Project...</option>';
+            currentData.projects.forEach(project => {
+                checkpointProject.innerHTML += `<option value="${project.id}">${project.name}</option>`;
+            });
+            
+            // Update artifacts filter
+            updateArtifactDropdowns();
+        }
+
+        // ===================================
+        // CHECKPOINT MANAGEMENT
+        // ===================================
+
+        function saveCheckpoint() {
+            const projectId = document.getElementById('checkpointProject').value;
+            const content = document.getElementById('checkpointContent').value.trim();
+            const label = document.getElementById('checkpointLabel').value.trim();
+            const reviewEnabled = document.getElementById('reviewArtifacts').checked;
+
+            if (!projectId) {
+                alert('Please select a project');
+                return;
+            }
+
+            if (!content) {
+                alert('Please paste checkpoint content');
+                return;
+            }
+
+            const project = getProject(projectId);
+            if (!project) {
+                alert('Project not found');
+                return;
+            }
+
+            // Validate checkpoint
+            const validation = validateCheckpointContent(content);
+
+            const checkpoint = {
+                id: generateId('cp'),
+                content: content,
+                label: label,
+                timestamp: new Date().toISOString(),
+                validation: validation,
+                lastUsed: new Date().toISOString()
+            };
+
+            project.checkpoints.push(checkpoint);
+            
+            // Handle artifacts based on review mode
+            if (reviewEnabled && pendingArtifacts.length > 0) {
+                // Use only checked artifacts
+                const checkboxes = document.querySelectorAll('.artifact-checkbox');
+                let savedCount = 0;
+                checkboxes.forEach((checkbox) => {
+                    const index = parseInt(checkbox.getAttribute('data-artifact-index'));
+                    if (checkbox.checked && pendingArtifacts[index]) {
+                        const artData = pendingArtifacts[index];
+                        saveApprovedArtifact(artData, checkpoint.id);
+                        savedCount++;
+                    }
+                });
+                console.log(`Saved ${savedCount} out of ${pendingArtifacts.length} artifacts`);
+                pendingArtifacts = []; // Clear pending
+            } else if (!reviewEnabled) {
+                // Auto-extract without review (old behavior)
+                extractAndSaveArtifactsFromCheckpoint(checkpoint, projectId);
+            }
+            
+            saveData();
+            closeSaveCheckpointModal();
+            renderCheckpoints();
+            
+            if (validation.isComplete) {
+                showNotification('Checkpoint saved successfully! ✓', 'success');
+            } else {
+                showNotification('Checkpoint saved (incomplete - missing sections)', 'warning');
+            }
+        }
+
+        function saveApprovedArtifact(artData, checkpointId) {
+            // Check if artifact already exists
+            const existing = currentData.artifacts.find(a => 
+                a.projectId === artData.projectId && 
+                (a.originalName === artData.filename || 
+                 (a.label && a.label.toLowerCase() === artData.description.toLowerCase()))
+            );
+            
+            if (!existing) {
+                // Create new artifact
+                const artifact = {
+                    id: generateId('art'),
+                    projectId: artData.projectId,
+                    originalName: artData.filename,
+                    suggestedName: artData.filename,
+                    label: artData.description,
+                    type: artData.type,
+                    externalPath: '',
+                    linkedCheckpoints: [checkpointId],
+                    version: currentData.artifacts.filter(a => a.projectId === artData.projectId).length + 1,
+                    created: new Date().toISOString(),
+                    lastUsed: new Date().toISOString(),
+                    autoExtracted: true
+                };
+                currentData.artifacts.push(artifact);
+                console.log('Saved approved artifact:', artData.filename);
+            } else {
+                // Link to existing
+                if (!existing.linkedCheckpoints.includes(checkpointId)) {
+                    existing.linkedCheckpoints.push(checkpointId);
+                    existing.lastUsed = new Date().toISOString();
+                }
+            }
+        }
+
+        function extractAndSaveArtifactsFromCheckpoint(checkpoint, projectId) {
+            // This is the non-interactive extraction for when review is disabled
+            const artifacts = extractArtifactsFromContent(checkpoint.content, projectId);
+            
+            artifacts.forEach(artData => {
+                saveApprovedArtifact(artData, checkpoint.id);
+            });
+            
+            console.log(`Auto-extracted ${artifacts.length} artifacts`);
+        }
+
+        function extractAndSaveArtifactsFromCheckpoint(checkpoint, projectId) {
+            const content = checkpoint.content;
+            
+            // Find "FILES WE USED" section (more flexible matching)
+            const filesSection = extractSection(content, [
+                'FILES WE USED',
+                'Files we used', 
+                'files we used',
+                'FILES USED',
+                'ARTIFACTS'
+            ]);
+            
+            if (!filesSection) return; // No files section found
+            
+            // Extract filenames (lines that look like files)
+            const lines = filesSection.split('\n');
+            
+            // Multiple patterns to catch different formats
+            const patterns = [
+                /[-•*]\s*([a-zA-Z0-9_\-\.]+\.\w{2,5})\b/,  // "- filename.ext"
+                /^\s*([a-zA-Z0-9_\-\.]+\.\w{2,5})\s*$/,    // "filename.ext" (plain)
+                /['"`]([a-zA-Z0-9_\-\.]+\.\w{2,5})['"`]/,  // "filename.ext" (quoted)
+            ];
+            
+            lines.forEach(line => {
+                line = line.trim();
+                if (!line) return;
+                
+                let filename = null;
+                
+                // Try each pattern
+                for (const pattern of patterns) {
+                    const match = line.match(pattern);
+                    if (match) {
+                        filename = match[1].trim();
+                        break;
+                    }
+                }
+                
+                if (filename && filename.length > 0) {
+                    // Check if artifact already exists
+                    const existing = currentData.artifacts.find(a => 
+                        a.projectId === projectId && 
+                        (a.originalName === filename || a.suggestedName === filename)
+                    );
+                    
+                    if (!existing) {
+                        // Create new artifact
+                        const artifact = createArtifactFromFilename(filename, projectId, checkpoint.id);
+                        currentData.artifacts.push(artifact);
+                    } else {
+                        // Link to existing artifact if not already linked
+                        if (!existing.linkedCheckpoints.includes(checkpoint.id)) {
+                            existing.linkedCheckpoints.push(checkpoint.id);
+                            existing.lastUsed = new Date().toISOString();
+                        }
+                    }
+                }
+            });
+        }
+
+        function extractSection(content, sectionNames) {
+            // Find section by looking for any of the section names
+            for (const sectionName of sectionNames) {
+                const regex = new RegExp(`${sectionName}[:\s]*\n([\\s\\S]*?)(?=\n[A-Z][A-Z\\s]+:|$)`, 'i');
+                const match = content.match(regex);
+                if (match) {
+                    return match[1].trim();
+                }
+            }
+            return null;
+        }
+
+        function createArtifactFromFilename(filename, projectId, checkpointId) {
+            const project = getProject(projectId);
+            
+            // Extract extension
+            const parts = filename.split('.');
+            const ext = parts.length > 1 ? parts[parts.length - 1].toLowerCase() : '';
+            
+            // Determine type from extension
+            let type = 'other';
+            if (['png', 'jpg', 'jpeg', 'svg', 'gif', 'webp'].includes(ext)) {
+                type = 'image';
+            } else if (['pdf', 'docx', 'doc', 'txt', 'md'].includes(ext)) {
+                type = 'document';
+            } else if (['csv', 'xlsx', 'xls', 'tsv'].includes(ext)) {
+                type = 'data';
+            } else if (['py', 'js', 'html', 'css', 'json', 'jsx', 'ts'].includes(ext)) {
+                type = 'code';
+            }
+            
+            // Count existing artifacts for versioning
+            const existingCount = currentData.artifacts.filter(a => 
+                a.projectId === projectId && a.type === type
+            ).length;
+            const version = existingCount + 1;
+            
+            return {
+                id: generateId('art'),
+                projectId: projectId,
+                originalName: filename,
+                suggestedName: filename, // Keep original unless user manually renames
+                label: `Auto-extracted from checkpoint`,
+                type: type,
+                externalPath: '',
+                linkedCheckpoints: [checkpointId],
+                version: version,
+                created: new Date().toISOString(),
+                lastUsed: new Date().toISOString(),
+                autoExtracted: true // Flag to show it was auto-created
+            };
+        }
+
+        function validateCheckpointContent(content) {
+            const requiredSections = [
+                "What we completed",
+                "current plan",
+                "Important decisions",
+                "Files we used",
+                "What we do next"
+            ];
+
+            const foundSections = requiredSections.filter(section => 
+                content.toLowerCase().includes(section.toLowerCase())
+            );
+
+            const missingSections = requiredSections.filter(section => 
+                !content.toLowerCase().includes(section.toLowerCase())
+            );
+
+            return {
+                isComplete: foundSections.length === 5,
+                foundCount: foundSections.length,
+                totalCount: requiredSections.length,
+                missingSections: missingSections
+            };
+        }
+
+        function validateCheckpoint() {
+            const content = document.getElementById('checkpointContent').value.trim();
+            
+            if (!content) {
+                alert('Please paste checkpoint content first');
+                return;
+            }
+
+            const validation = validateCheckpointContent(content);
+            const resultsDiv = document.getElementById('validationResults');
+            const detailsDiv = document.getElementById('validationDetails');
+
+            resultsDiv.classList.remove('hidden');
+
+            let html = `
+                <div class="flex items-center gap-2 mb-2">
+                    ${validation.isComplete 
+                        ? '<span class="text-green-600">✓ Complete</span>' 
+                        : '<span class="text-yellow-600">⚠ Incomplete</span>'}
+                    <span class="text-gray-600">(${validation.foundCount}/${validation.totalCount} sections found)</span>
+                </div>
+            `;
+
+            if (!validation.isComplete) {
+                html += '<div class="text-sm text-gray-600 mt-2">Missing sections:</div>';
+                validation.missingSections.forEach(section => {
+                    html += `<div class="text-sm text-red-600">✗ ${section}</div>`;
+                });
+            } else {
+                html += '<div class="text-sm text-green-600">All required sections present!</div>';
+            }
+
+            detailsDiv.innerHTML = html;
+        }
+
+        function deleteCheckpoint(projectId, checkpointId) {
+            if (!confirm('Are you sure you want to delete this checkpoint?')) {
+                return;
+            }
+
+            const project = getProject(projectId);
+            if (!project) return;
+
+            project.checkpoints = project.checkpoints.filter(cp => cp.id !== checkpointId);
+            saveData();
+            closeViewCheckpointModal();
+            renderCheckpoints();
+            showNotification('Checkpoint deleted', 'info');
+        }
+
+        function deleteCurrentCheckpoint() {
+            if (currentViewingCheckpoint) {
+                deleteCheckpoint(currentViewingCheckpoint.projectId, currentViewingCheckpoint.checkpointId);
+            }
+        }
+
+        // ===================================
+        // ARTIFACT MANAGEMENT
+        // ===================================
+
+        let pendingArtifacts = []; // Artifacts waiting for user approval
+
+        function previewExtractedArtifacts() {
+            const content = document.getElementById('checkpointContent').value.trim();
+            const projectId = document.getElementById('checkpointProject').value;
+            
+            if (!content) {
+                alert('Please paste checkpoint content first');
+                return;
+            }
+            
+            if (!projectId) {
+                alert('Please select a project first');
+                return;
+            }
+            
+            // Extract artifacts from content
+            pendingArtifacts = extractArtifactsFromContent(content, projectId);
+            
+            const previewDiv = document.getElementById('extractedArtifactsPreview');
+            const listDiv = document.getElementById('extractedArtifactsList');
+            const countSpan = document.getElementById('artifactCount');
+            
+            if (pendingArtifacts.length === 0) {
+                alert('No files found in "Files we used" section');
+                previewDiv.classList.add('hidden');
+                return;
+            }
+            
+            // Show preview
+            previewDiv.classList.remove('hidden');
+            countSpan.textContent = `(${pendingArtifacts.length} found)`;
+            
+            // Render list with checkboxes
+            listDiv.innerHTML = pendingArtifacts.map((art, index) => `
+                <label class="flex items-start gap-2 p-2 hover:bg-gray-50 rounded cursor-pointer">
+                    <input type="checkbox" 
+                           checked 
+                           data-artifact-index="${index}"
+                           class="artifact-checkbox mt-1 w-4 h-4 text-indigo-600 rounded">
+                    <div class="flex-1 text-sm">
+                        <div class="font-medium text-gray-800">${escapeHtml(art.filename)}</div>
+                        <div class="text-gray-600 text-xs">${escapeHtml(art.description)}</div>
+                        <div class="text-gray-500 text-xs">Type: ${art.type}</div>
+                    </div>
+                </label>
+            `).join('');
+        }
+
+        function extractArtifactsFromContent(content, projectId) {
+            // Find "FILES WE USED" section with flexible matching
+            const filesSection = extractFilesSection(content);
+            
+            if (!filesSection) {
+                console.log('No files section found');
+                return [];
+            }
+            
+            console.log('Files section found:', filesSection.substring(0, 200));
+            
+            const artifacts = [];
+            const lines = filesSection.split('\n');
+            
+            lines.forEach((line, index) => {
+                line = line.trim();
+                if (!line || line.length < 3) return;
+                
+                // Skip section header
+                if (line.toLowerCase().match(/^files?\s+(we\s+)?used/i)) return;
+                
+                // Remove common bullet formats
+                const cleanLine = line.replace(/^[-•*✓\d]+[.)\s]+/, '').trim();
+                if (!cleanLine) return;
+                
+                // Try to find actual filename with extension
+                const filenameMatch = cleanLine.match(/([a-zA-Z0-9_\-\.]+\.[a-zA-Z0-9]{2,5})\b/);
+                
+                let filename, description;
+                
+                if (filenameMatch) {
+                    // Found actual filename
+                    filename = filenameMatch[1];
+                    description = cleanLine.replace(filename, '').replace(/^[-:,\s]+/, '').trim() || filename;
+                } else {
+                    // No extension found, use whole line as description
+                    filename = `file_${artifacts.length + 1}`;
+                    description = cleanLine;
+                }
+                
+                // Infer type
+                const type = inferFileType(filename, description);
+                
+                artifacts.push({
+                    filename: filename,
+                    description: description,
+                    type: type,
+                    projectId: projectId
+                });
+            });
+            
+            return artifacts;
+        }
+
+        function extractFilesSection(content) {
+            // Very flexible section matching
+            const patterns = [
+                /FILES?\s+WE\s+USED[:\s]*\n([\s\S]*?)(?=\n[A-Z][A-Z\s]+[:\n]|$)/i,
+                /FILES?\s+USED[:\s]*\n([\s\S]*?)(?=\n[A-Z][A-Z\s]+[:\n]|$)/i,
+                /ARTIFACTS?[:\s]*\n([\s\S]*?)(?=\n[A-Z][A-Z\s]+[:\n]|$)/i
+            ];
+            
+            for (const pattern of patterns) {
+                const match = content.match(pattern);
+                if (match) {
+                    return match[1].trim();
+                }
+            }
+            
+            return null;
+        }
+
+        function inferFileType(filename, description) {
+            const lower = (filename + ' ' + description).toLowerCase();
+            
+            if (lower.match(/\.(png|jpg|jpeg|gif|svg|webp|bmp)/)) return 'image';
+            if (lower.match(/\.(pdf|docx?|txt|md|rtf)/)) return 'document';
+            if (lower.match(/\.(csv|xlsx?|tsv|json)/)) return 'data';
+            if (lower.match(/\.(py|js|html|css|java|cpp|ts)/)) return 'code';
+            if (lower.match(/image|photo|picture|screenshot|diagram/)) return 'image';
+            if (lower.match(/document|report|pdf|file/)) return 'document';
+            if (lower.match(/data|spreadsheet|csv|table/)) return 'data';
+            if (lower.match(/code|script|program/)) return 'code';
+            if (lower.match(/video|footage|recording/)) return 'image'; // Use image icon for video
+            
+            return 'other';
+        }
+
+        function saveArtifact() {
+            const projectId = document.getElementById('artifactProject').value;
+            const originalName = document.getElementById('artifactOriginalName').value.trim();
+            const suggestedName = document.getElementById('artifactSuggestedName').value.trim();
+            const label = document.getElementById('artifactLabel').value.trim();
+            const type = document.getElementById('artifactType').value;
+            const path = document.getElementById('artifactPath').value.trim();
+            const checkpointLink = document.getElementById('artifactCheckpointLink').value;
+
+            if (!projectId) {
+                alert('Please select a project');
+                return;
+            }
+
+            if (!originalName) {
+                alert('Please enter the original filename');
+                return;
+            }
+
+            const project = getProject(projectId);
+            if (!project) {
+                alert('Project not found');
+                return;
+            }
+
+            // Determine version number
+            const existingArtifacts = currentData.artifacts.filter(a => 
+                a.projectId === projectId && 
+                a.suggestedName.startsWith(suggestedName.split('_v')[0])
+            );
+            const version = existingArtifacts.length + 1;
+
+            const artifact = {
+                id: generateId('art'),
+                projectId: projectId,
+                originalName: originalName,
+                suggestedName: suggestedName || originalName,
+                label: label,
+                type: type,
+                externalPath: path,
+                linkedCheckpoints: checkpointLink ? [checkpointLink] : [],
+                version: version,
+                created: new Date().toISOString(),
+                lastUsed: new Date().toISOString()
+            };
+
+            currentData.artifacts.push(artifact);
+            saveData();
+            closeAddArtifactModal();
+            renderArtifacts();
+            showNotification('Artifact added successfully!', 'success');
+        }
+
+        function suggestArtifactName() {
+            const projectId = document.getElementById('artifactProject').value;
+            const originalName = document.getElementById('artifactOriginalName').value.trim();
+            
+            if (!projectId || !originalName) return;
+
+            const project = getProject(projectId);
+            if (!project) return;
+
+            // Extract extension
+            const parts = originalName.split('.');
+            const ext = parts.length > 1 ? parts[parts.length - 1] : '';
+            
+            // Get file type from extension
+            let fileType = 'file';
+            if (['png', 'jpg', 'jpeg', 'svg', 'gif'].includes(ext.toLowerCase())) {
+                fileType = 'image';
+            } else if (['pdf', 'docx', 'doc', 'txt', 'md'].includes(ext.toLowerCase())) {
+                fileType = 'document';
+            } else if (['csv', 'xlsx', 'xls'].includes(ext.toLowerCase())) {
+                fileType = 'data';
+            } else if (['py', 'js', 'html', 'css', 'json'].includes(ext.toLowerCase())) {
+                fileType = 'code';
+            }
+
+            // Count existing artifacts for versioning
+            const existingCount = currentData.artifacts.filter(a => a.projectId === projectId).length;
+            const version = existingCount + 1;
+
+            // Generate suggestion
+            const cleanProjectName = project.name.replace(/\s+/g, '');
+            const suggested = `${cleanProjectName}_${fileType}_v${version}.${ext}`;
+
+            document.getElementById('artifactSuggestedName').value = suggested;
+        }
+
+        function renderArtifacts() {
+            const container = document.getElementById('artifactsList');
+            const emptyState = document.getElementById('artifactsEmptyState');
+            
+            if (currentData.artifacts.length === 0) {
+                container.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+
+            // Apply filters
+            const searchTerm = document.getElementById('artifactSearchInput').value.toLowerCase();
+            const projectFilter = document.getElementById('artifactProjectFilter').value;
+            const typeFilter = document.getElementById('artifactTypeFilter').value;
+
+            let filtered = currentData.artifacts.filter(art => {
+                const matchesSearch = !searchTerm || 
+                    art.originalName.toLowerCase().includes(searchTerm) ||
+                    art.suggestedName.toLowerCase().includes(searchTerm) ||
+                    (art.label && art.label.toLowerCase().includes(searchTerm));
+                
+                const matchesProject = !projectFilter || art.projectId === projectFilter;
+                const matchesType = !typeFilter || art.type === typeFilter;
+
+                return matchesSearch && matchesProject && matchesType;
+            });
+
+            // Sort by most recent
+            filtered.sort((a, b) => new Date(b.created) - new Date(a.created));
+
+            // Render
+            container.innerHTML = filtered.map(art => {
+                const project = getProject(art.projectId);
+                const projectName = project ? project.name : 'Unknown Project';
+                
+                const typeIcons = {
+                    'document': '📄',
+                    'image': '🖼️',
+                    'data': '📊',
+                    'code': '💻',
+                    'other': '📎'
+                };
+                
+                const icon = typeIcons[art.type] || '📎';
+
+                return `
+                    <div class="checkpoint-card bg-white rounded-lg shadow-md p-6">
+                        <div class="flex justify-between items-start mb-3">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <span class="text-2xl">${icon}</span>
+                                    <h3 class="text-lg font-semibold text-gray-800">
+                                        ${escapeHtml(art.suggestedName || art.originalName)}
+                                    </h3>
+                                    ${art.autoExtracted ? '<span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">Auto</span>' : ''}
+                                </div>
+                                ${art.label && art.label !== 'Auto-extracted from checkpoint' ? `<p class="text-sm text-gray-600 mb-1">${escapeHtml(art.label)}</p>` : ''}
+                                ${art.originalName !== art.suggestedName ? `
+                                    <p class="text-xs text-gray-500 mb-1">
+                                        Original: ${escapeHtml(art.originalName)}
+                                    </p>
+                                ` : ''}
+                                <p class="text-xs text-gray-500">
+                                    ${projectName} • v${art.version} • ${formatDate(art.created)}
+                                </p>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="editArtifact('${art.id}')" 
+                                        class="text-blue-600 hover:text-blue-800 text-sm"
+                                        title="Edit artifact">
+                                    ✏️
+                                </button>
+                                <button onclick="deleteArtifact('${art.id}')" 
+                                        class="text-red-600 hover:text-red-800 text-sm"
+                                        title="Delete artifact">
+                                    🗑️
+                                </button>
+                            </div>
+                        </div>
+                        
+                        ${art.linkedCheckpoints.length > 0 ? `
+                            <div class="mt-3 pt-3 border-t border-gray-200">
+                                <p class="text-xs text-gray-600">
+                                    🔗 Linked to ${art.linkedCheckpoints.length} checkpoint(s)
+                                </p>
+                            </div>
+                        ` : ''}
+                        
+                        ${art.externalPath ? `
+                            <div class="mt-2">
+                                <p class="text-xs text-gray-500">
+                                    📁 ${escapeHtml(art.externalPath)}
+                                </p>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function filterArtifacts() {
+            renderArtifacts();
+        }
+
+        function deleteArtifact(artifactId) {
+            if (!confirm('Are you sure you want to delete this artifact?')) {
+                return;
+            }
+
+            currentData.artifacts = currentData.artifacts.filter(a => a.id !== artifactId);
+            saveData();
+            renderArtifacts();
+            showNotification('Artifact deleted', 'info');
+        }
+
+        function editArtifact(artifactId) {
+            // TODO: Implement edit functionality if needed
+            // For now, user can delete and re-add, or we can add edit modal later
+            showNotification('Edit feature coming in Phase 2', 'info');
+        }
+
+        function showAddArtifactModal() {
+            const modal = document.getElementById('addArtifactModal');
+            const projectSelect = document.getElementById('artifactProject');
+            const checkpointSelect = document.getElementById('artifactCheckpointLink');
+            
+            // Update project dropdown
+            projectSelect.innerHTML = '<option value="">Select Project...</option>';
+            currentData.projects.forEach(project => {
+                projectSelect.innerHTML += `<option value="${project.id}">${project.name}</option>`;
+            });
+
+            // Update checkpoint dropdown
+            checkpointSelect.innerHTML = '<option value="">Not linked to any checkpoint</option>';
+            currentData.projects.forEach(project => {
+                if (project.checkpoints && project.checkpoints.length > 0) {
+                    project.checkpoints.forEach(cp => {
+                        const label = cp.label || 'Checkpoint';
+                        checkpointSelect.innerHTML += `<option value="${cp.id}">${project.name}: ${label}</option>`;
+                    });
+                }
+            });
+
+            // Reset form
+            document.getElementById('artifactOriginalName').value = '';
+            document.getElementById('artifactSuggestedName').value = '';
+            document.getElementById('artifactLabel').value = '';
+            document.getElementById('artifactType').value = 'document';
+            document.getElementById('artifactPath').value = '';
+            
+            modal.classList.remove('hidden');
+            
+            // Reset scroll
+            const modalContent = modal.querySelector('.overflow-y-auto');
+            if (modalContent) modalContent.scrollTop = 0;
+        }
+
+        function closeAddArtifactModal() {
+            document.getElementById('addArtifactModal').classList.add('hidden');
+        }
+
+        function updateArtifactDropdowns() {
+            const projectFilter = document.getElementById('artifactProjectFilter');
+            
+            projectFilter.innerHTML = '<option value="">All Projects</option>';
+            currentData.projects.forEach(project => {
+                projectFilter.innerHTML += `<option value="${project.id}">${project.name}</option>`;
+            });
+        }
+
+        // ===================================
+        // TAB SWITCHING
+        // ===================================
+
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.getElementById('checkpointsTab').classList.add('hidden');
+            document.getElementById('artifactsTab').classList.add('hidden');
+            
+            // Remove active state from all tab buttons
+            document.getElementById('tabCheckpoints').classList.remove('border-white');
+            document.getElementById('tabCheckpoints').classList.add('border-transparent');
+            document.getElementById('tabArtifacts').classList.remove('border-white');
+            document.getElementById('tabArtifacts').classList.add('border-transparent');
+            
+            // Show selected tab
+            if (tabName === 'checkpoints') {
+                document.getElementById('checkpointsTab').classList.remove('hidden');
+                document.getElementById('tabCheckpoints').classList.add('border-white');
+                document.getElementById('tabCheckpoints').classList.remove('border-transparent');
+            } else if (tabName === 'artifacts') {
+                document.getElementById('artifactsTab').classList.remove('hidden');
+                document.getElementById('tabArtifacts').classList.add('border-white');
+                document.getElementById('tabArtifacts').classList.remove('border-transparent');
+                renderArtifacts();
+            }
+        }
+
+        // ===================================
+        // RENDERING
+        // ===================================
+
+        function renderCheckpoints() {
+            const container = document.getElementById('checkpointsList');
+            const emptyState = document.getElementById('emptyState');
+            
+            let allCheckpoints = [];
+
+            // Gather all checkpoints from all projects
+            currentData.projects.forEach(project => {
+                project.checkpoints.forEach(checkpoint => {
+                    allCheckpoints.push({
+                        ...checkpoint,
+                        projectId: project.id,
+                        projectName: project.name
+                    });
+                });
+            });
+
+            if (allCheckpoints.length === 0) {
+                container.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+
+            // Apply filters
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const projectFilter = document.getElementById('projectFilter').value;
+            const sortOrder = document.getElementById('sortOrder').value;
+
+            let filtered = allCheckpoints.filter(cp => {
+                const matchesSearch = !searchTerm || 
+                    cp.content.toLowerCase().includes(searchTerm) ||
+                    (cp.label && cp.label.toLowerCase().includes(searchTerm)) ||
+                    cp.projectName.toLowerCase().includes(searchTerm);
+                
+                const matchesProject = !projectFilter || cp.projectId === projectFilter;
+
+                return matchesSearch && matchesProject;
+            });
+
+            // Sort
+            if (sortOrder === 'newest') {
+                filtered.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            } else if (sortOrder === 'oldest') {
+                filtered.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+            } else if (sortOrder === 'project') {
+                filtered.sort((a, b) => a.projectName.localeCompare(b.projectName));
+            }
+
+            // Render
+            container.innerHTML = filtered.map(cp => `
+                <div class="checkpoint-card bg-white rounded-lg shadow-md p-6">
+                    <div class="flex justify-between items-start mb-3" onclick="viewCheckpoint('${cp.projectId}', '${cp.id}')" style="cursor: pointer;">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-800">
+                                ${cp.label || 'Checkpoint'}
+                            </h3>
+                            <p class="text-sm text-gray-500">
+                                ${cp.projectName} • ${formatDate(cp.timestamp)}
+                            </p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            ${cp.validation.isComplete 
+                                ? '<span class="text-green-600 text-sm">✓ Complete</span>' 
+                                : '<span class="text-yellow-600 text-sm">⚠ Incomplete</span>'}
+                        </div>
+                    </div>
+                    <div class="text-sm text-gray-600 line-clamp-3 mb-3" onclick="viewCheckpoint('${cp.projectId}', '${cp.id}')" style="cursor: pointer;">
+                        ${escapeHtml(cp.content.substring(0, 200))}...
+                    </div>
+                    <div class="flex justify-end pt-2 border-t border-gray-100">
+                        <button onclick="event.stopPropagation(); generateRestorationPrompt('${cp.projectId}', '${cp.id}')" 
+                                class="btn-restore-card">
+                            🔄 Generate Restoration Prompt
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function viewCheckpoint(projectId, checkpointId) {
+            const project = getProject(projectId);
+            if (!project) return;
+
+            const checkpoint = project.checkpoints.find(cp => cp.id === checkpointId);
+            if (!checkpoint) return;
+
+            currentViewingCheckpoint = { projectId, checkpointId };
+
+            document.getElementById('viewCheckpointTitle').textContent = 
+                checkpoint.label || 'Checkpoint';
+            
+            document.getElementById('viewCheckpointMeta').textContent = 
+                `${project.name} • ${formatDate(checkpoint.timestamp)}`;
+
+            document.getElementById('viewCheckpointContent').textContent = checkpoint.content;
+
+            const modal = document.getElementById('viewCheckpointModal');
+            modal.classList.remove('hidden');
+            
+            // Reset scroll position
+            const modalContent = modal.querySelector('.overflow-y-auto');
+            if (modalContent) modalContent.scrollTop = 0;
+
+            // Update last used timestamp
+            checkpoint.lastUsed = new Date().toISOString();
+            saveData();
+        }
+
+        function filterCheckpoints() {
+            renderCheckpoints();
+        }
+
+        // ===================================
+        // CLIPBOARD & EXPORT/IMPORT
+        // ===================================
+
+        function copyCheckpointToClipboard() {
+            const content = document.getElementById('viewCheckpointContent').textContent;
+            
+            navigator.clipboard.writeText(content).then(() => {
+                showNotification('Copied to clipboard! ✓', 'success');
+            }).catch(err => {
+                // Fallback for older browsers
+                const textarea = document.createElement('textarea');
+                textarea.value = content;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                showNotification('Copied to clipboard! ✓', 'success');
+            });
+        }
+
+        function exportData() {
+            const dataStr = JSON.stringify(currentData, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `vizier-toolkit-backup-${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showNotification('Data exported successfully!', 'success');
+        }
+
+        function importData() {
+            const fileInput = document.getElementById('importFile');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                alert('Please select a file');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    
+                    // Merge imported data with existing
+                    imported.projects.forEach(importedProject => {
+                        const existing = currentData.projects.find(p => p.id === importedProject.id);
+                        if (existing) {
+                            // Merge checkpoints
+                            importedProject.checkpoints.forEach(cp => {
+                                if (!existing.checkpoints.find(ecp => ecp.id === cp.id)) {
+                                    existing.checkpoints.push(cp);
+                                }
+                            });
+                        } else {
+                            currentData.projects.push(importedProject);
+                        }
+                    });
+
+                    saveData();
+                    closeImportModal();
+                    updateProjectDropdowns();
+                    renderCheckpoints();
+                    showNotification('Data imported successfully!', 'success');
+                } catch (err) {
+                    alert('Error importing data: ' + err.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // ===================================
+        // MODAL CONTROLS
+        // ===================================
+
+        function showSaveCheckpointModal() {
+            const modal = document.getElementById('saveCheckpointModal');
+            modal.classList.remove('hidden');
+            
+            // Reset scroll position
+            const modalContent = modal.querySelector('.overflow-y-auto');
+            if (modalContent) modalContent.scrollTop = 0;
+            
+            document.getElementById('checkpointContent').value = '';
+            document.getElementById('checkpointLabel').value = '';
+            document.getElementById('validationResults').classList.add('hidden');
+        }
+
+        function closeSaveCheckpointModal() {
+            document.getElementById('saveCheckpointModal').classList.add('hidden');
+        }
+
+        function showNewProjectModal() {
+            document.getElementById('newProjectModal').classList.remove('hidden');
+            document.getElementById('newProjectName').value = '';
+        }
+
+        function closeNewProjectModal() {
+            document.getElementById('newProjectModal').classList.add('hidden');
+        }
+
+        function showImportModal() {
+            document.getElementById('importModal').classList.remove('hidden');
+            document.getElementById('importFile').value = '';
+        }
+
+        function closeImportModal() {
+            document.getElementById('importModal').classList.add('hidden');
+        }
+
+        function closeViewCheckpointModal() {
+            document.getElementById('viewCheckpointModal').classList.add('hidden');
+            currentViewingCheckpoint = null;
+        }
+
+        // ===================================
+        // UTILITY FUNCTIONS
+        // ===================================
+
+        function formatDate(isoString) {
+            const date = new Date(isoString);
+            const now = new Date();
+            const diffMs = now - date;
+            const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+            if (diffDays === 0) {
+                return 'Today ' + date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+            } else if (diffDays === 1) {
+                return 'Yesterday';
+            } else if (diffDays < 7) {
+                return `${diffDays} days ago`;
+            } else {
+                return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function showNotification(message, type = 'info') {
+            const colors = {
+                success: 'bg-green-500',
+                warning: 'bg-yellow-500',
+                error: 'bg-red-500',
+                info: 'bg-blue-500'
+            };
+
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 ${colors[type]} text-white px-6 py-3 rounded-lg shadow-lg z-50 transition-opacity`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // ===================================
+        // INITIALIZATION
+        // ===================================
+
+        function scanExistingCheckpointsForArtifacts() {
+            // Scan all existing checkpoints and extract artifacts
+            let newArtifactsCount = 0;
+            
+            currentData.projects.forEach(project => {
+                if (project.checkpoints && project.checkpoints.length > 0) {
+                    project.checkpoints.forEach(checkpoint => {
+                        const beforeCount = currentData.artifacts.length;
+                        // Use new extraction method
+                        const artifacts = extractArtifactsFromContent(checkpoint.content, project.id);
+                        artifacts.forEach(artData => {
+                            saveApprovedArtifact(artData, checkpoint.id);
+                        });
+                        const afterCount = currentData.artifacts.length;
+                        newArtifactsCount += (afterCount - beforeCount);
+                    });
+                }
+            });
+            
+            if (newArtifactsCount > 0) {
+                saveData();
+                console.log(`Scanned existing checkpoints: ${newArtifactsCount} new artifacts found`);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initData();
+            scanExistingCheckpointsForArtifacts(); // Scan existing checkpoints
+            updateProjectDropdowns();
+            renderCheckpoints();
+        });
+
+        // Close modals on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closePromptGeneratorModal();
+                closeSaveCheckpointModal();
+                closeNewProjectModal();
+                closeImportModal();
+                closeViewCheckpointModal();
+                closeAddArtifactModal();
+                closeAboutModal();
+                closeRestorationPromptModal();
+            }
+        });
+
+        // ===================================
+        // ABOUT MODAL
+        // ===================================
+        
+        function showAboutModal() {
+            document.getElementById('aboutModal').classList.remove('hidden');
+        }
+        
+        function closeAboutModal() {
+            document.getElementById('aboutModal').classList.add('hidden');
+        }
+
+        // ===================================
+        // RESTORATION PROMPT GENERATOR
+        // ===================================
+        
+        function generateRestorationPrompt(projectId, checkpointId) {
+            const project = getProject(projectId);
+            if (!project) return;
+            
+            const checkpoint = project.checkpoints.find(cp => cp.id === checkpointId);
+            if (!checkpoint) return;
+            
+            const restorationPrompt = `Restore this project using the summary below, which is the latest checkpoint.
+Treat the checkpoint as the authoritative record for this project.
+Do not invent missing context or change prior decisions unless I explicitly say so.
+
+After reading it:
+1) Briefly restate the current project state and plan.
+2) List any files or artifacts you need me to re-upload.
+3) Wait for my confirmation before doing new work.
+
+---
+${checkpoint.content}
+---`;
+            
+            // Show in modal
+            document.getElementById('restorationPromptTitle').textContent = checkpoint.label || 'Checkpoint';
+            document.getElementById('restorationPromptMeta').textContent = `${project.name} • ${formatDate(checkpoint.timestamp)}`;
+            document.getElementById('restorationPromptText').textContent = restorationPrompt;
+            document.getElementById('restorationPromptModal').classList.remove('hidden');
+            
+            // Store for copying
+            window.currentRestorationPrompt = restorationPrompt;
+        }
+        
+        function closeRestorationPromptModal() {
+            document.getElementById('restorationPromptModal').classList.add('hidden');
+        }
+        
+        function copyRestorationPrompt() {
+            const prompt = window.currentRestorationPrompt;
+            if (!prompt) return;
+            
+            navigator.clipboard.writeText(prompt).then(() => {
+                showNotification('Restoration prompt copied! Paste into new AI session.', 'success');
+            }).catch(err => {
+                // Fallback
+                const textarea = document.createElement('textarea');
+                textarea.value = prompt;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                showNotification('Restoration prompt copied! Paste into new AI session.', 'success');
+            });
+        }
+        
+        // Generate restoration prompt from inside View Checkpoint modal
+        function generateRestorationPromptFromModal() {
+            if (!currentViewingCheckpoint) return;
+            generateRestorationPrompt(currentViewingCheckpoint.projectId, currentViewingCheckpoint.id);
+        }
+    </script>
+
+</body>
+</html>

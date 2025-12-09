@@ -24,6 +24,3 @@ No installation.
 No backend.
 No extensions.
 
-License
-
-MIT License (free for personal and commercial use).

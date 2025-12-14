@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vizier Preservation Toolkit</title>
+    <title>Vizier Preservation Toolkit v1.0</title>
     
     <!-- Suppress Tailwind CDN warning -->
     <script>
@@ -66,8 +66,27 @@
     <!-- Header -->
     <header class="bg-indigo-600 text-white shadow-lg">
         <div class="container mx-auto px-4 py-6">
-            <h1 class="text-3xl font-bold">Vizier Preservation Toolkit</h1>
-            <p class="text-indigo-100 mt-1">State Ledger & Artifact Registry for AI Projects</p>
+            <h1 class="text-3xl font-bold">Vizier Preservation Toolkit <span class="text-lg text-indigo-200">v1.0</span></h1>
+            <p class="text-indigo-100 mt-1">State Ledger, Work Logs & Artifact Registry for AI Projects</p>
+            
+            <!-- Global Actions Bar -->
+            <div class="flex items-center justify-between mt-4 pb-4 border-b border-indigo-500">
+                <div class="flex gap-3">
+<button onclick="showProjectManagerModal()" class="bg-indigo-500 hover:bg-indigo-400 text-white px-4 py-2 rounded-lg transition font-medium">Projects</button>
+                <button onclick="showExportModal()" 
+                        class="bg-indigo-500 hover:bg-indigo-400 text-white px-4 py-2 rounded-lg transition font-medium text-sm">
+                    ðŸ“¤ Export
+                </button>
+                <button onclick="showImportModal()" 
+                        class="bg-indigo-500 hover:bg-indigo-400 text-white px-4 py-2 rounded-lg transition font-medium text-sm">
+                    ðŸ“¥ Import
+                </button>
+                <button onclick="showClearAllDataModal()" 
+                        class="bg-red-500 hover:bg-red-400 text-white px-4 py-2 rounded-lg transition font-medium text-sm ml-auto">
+                    ðŸ—‘ï¸ Clear All Data
+                </button>
+            </div>
+            </div>
             
             <!-- Tab Navigation with Info Button -->
             <div class="flex justify-between items-center mt-4 border-b border-indigo-500">
@@ -76,6 +95,11 @@
                             id="tabCheckpoints"
                             class="tab-button pb-2 px-4 border-b-2 border-white font-semibold">
                         State Ledger
+                    </button>
+                    <button onclick="switchTab('worklogs')" 
+                            id="tabWorklogs"
+                            class="tab-button pb-2 px-4 border-b-2 border-transparent hover:border-indigo-300 transition">
+                        Work Logs
                     </button>
                     <button onclick="switchTab('artifacts')" 
                             id="tabArtifacts"
@@ -91,7 +115,9 @@
                         <text x="10" y="14" text-anchor="middle" font-size="12" font-family="Georgia, serif" font-style="italic" fill="currentColor">i</text>
                     </svg>
                 </button>
-            </div>
+                </div>
+                <button id="projectContextIndicator" type="button" onclick="showProjectManagerModal();" class="text-indigo-100 text-sm font-medium px-3 py-2 rounded-lg bg-indigo-800/40 border border-indigo-700/30 hover:bg-indigo-800/60 transition cursor-pointer">Project: All Projects</button>
+            </div>>
         </div>
     </header>
 
@@ -106,25 +132,11 @@
                 <div class="flex gap-4">
                     <button onclick="showPromptGeneratorModal()" 
                             class="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition font-semibold">
-                        ⚡ Generate Checkpoint Request
+                        âš¡ Generate Checkpoint Request
                     </button>
                     <button onclick="showSaveCheckpointModal()" 
                             class="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition">
                         + Save Checkpoint
-                    </button>
-                    <button onclick="showNewProjectModal()" 
-                            class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition">
-                        + New Project
-                    </button>
-                </div>
-                <div class="flex gap-4">
-                    <button onclick="exportData()" 
-                            class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition">
-                        Export All
-                    </button>
-                    <button onclick="showImportModal()" 
-                            class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition">
-                        Import
                     </button>
                 </div>
             </div>
@@ -165,17 +177,94 @@
 
         <!-- Empty State -->
         <div id="emptyState" class="text-center py-16 hidden">
-            <div class="text-gray-400 text-6xl mb-4">📋</div>
+            <div class="text-gray-400 text-6xl mb-4">ðŸ“‹</div>
             <h3 class="text-xl font-semibold text-gray-700 mb-2">No Checkpoints Yet</h3>
-            <p class="text-gray-500 mb-6">Start by creating your first project and saving a checkpoint</p>
-            <button onclick="showNewProjectModal()" 
-                    class="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition">
-                Create Your First Project
-            </button>
+            <p class="text-gray-600 mb-6">Checkpoints are restore points. Use them to preserve context, decisions, and next steps across sessions.</p>
+            <button onclick="showProjectManagerModal()" class="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition">Create a Project</button>
         </div>
 
         </div>
         <!-- END CHECKPOINTS TAB -->
+
+        <!-- WORK LOGS TAB -->
+        <div id="worklogsTab" class="tab-content hidden">
+            
+            <!-- Action Bar -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+                <div class="flex flex-wrap gap-4 items-center justify-between">
+                    <div class="flex gap-4">
+                        <button onclick="showWorkLogGeneratorModal()" 
+                                class="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition font-semibold">
+                            âš¡ Generate Work Log Template
+                        </button>
+                        <button onclick="showSaveWorkLogModal()" 
+                                class="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition">
+                            + Save Work Log
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Search Bar -->
+                <div class="mt-4">
+                    <input type="text" 
+                           id="worklogSearchInput"
+                           placeholder="Search work logs..." 
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                           oninput="filterWorkLogs()">
+                </div>
+
+                <!-- Filters -->
+                <div class="mt-4 flex gap-4 items-center flex-wrap">
+                    <label class="text-sm text-gray-600">Filter by project:</label>
+                    <select id="worklogProjectFilter" 
+                            onchange="filterWorkLogs()"
+                            class="px-3 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                        <option value="">All Projects</option>
+                    </select>
+                    
+                    <label class="text-sm text-gray-600 ml-4">Sort by:</label>
+                    <select id="worklogSortOrder" 
+                            onchange="filterWorkLogs()"
+                            class="px-3 py-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                        <option value="newest">Newest First</option>
+                        <option value="oldest">Oldest First</option>
+                        <option value="project">By Project</option>
+                    </select>
+                </div>
+
+                <!-- Active Filter Indicator -->
+                <div id="activeCheckpointFilterIndicator" class="mt-4 hidden">
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="text-blue-800 font-medium">ðŸ” Filtered by checkpoint</span>
+                            <span id="activeCheckpointFilterLabel" class="text-blue-600 text-sm"></span>
+                        </div>
+                        <button onclick="clearCheckpointFilter()" 
+                                class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                            Clear Filter âœ•
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Work Logs List -->
+            <div id="worklogsList" class="space-y-4">
+                <!-- Work logs will be rendered here -->
+            </div>
+
+            <!-- Empty State -->
+            <div id="worklogsEmptyState" class="text-center py-16 hidden">
+                <div class="text-gray-400 text-6xl mb-4">ðŸ“</div>
+                <h3 class="text-xl font-semibold text-gray-700 mb-2">No Work Logs Yet</h3>
+                <p class="text-gray-600 mb-6">Work logs record what you completed and decided, without creating a restore point.</p>
+                <button onclick="showWorkLogGeneratorModal()" 
+                        class="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition">
+                    Create a Work Log Your First Work Log
+                </button>
+            </div>
+
+        </div>
+        <!-- END WORK LOGS TAB -->
 
         <!-- ARTIFACTS TAB -->
         <div id="artifactsTab" class="tab-content hidden">
@@ -221,6 +310,20 @@
                         <option value="other">Other</option>
                     </select>
                 </div>
+
+                <!-- Active Filter Indicator -->
+                <div id="activeArtifactCheckpointFilterIndicator" class="mt-4 hidden">
+                    <div class="bg-purple-50 border border-purple-200 rounded-lg p-3 flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="text-purple-800 font-medium">ðŸ” Filtered by checkpoint</span>
+                            <span id="activeArtifactCheckpointFilterLabel" class="text-purple-600 text-sm"></span>
+                        </div>
+                        <button onclick="clearArtifactCheckpointFilter()"
+                                class="text-purple-600 hover:text-purple-800 text-sm font-medium">
+                            Clear Filter âœ•
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <!-- Artifacts List -->
@@ -230,12 +333,12 @@
 
             <!-- Empty State -->
             <div id="artifactsEmptyState" class="text-center py-16 hidden">
-                <div class="text-gray-400 text-6xl mb-4">📎</div>
+                <div class="text-gray-400 text-6xl mb-4">ðŸ“Ž</div>
                 <h3 class="text-xl font-semibold text-gray-700 mb-2">No Artifacts Yet</h3>
-                <p class="text-gray-500 mb-6">Start tracking files used in your AI projects</p>
+                <p class="text-gray-600 mb-6">Artifacts track files, links, screenshots, and references tied to a project or checkpoint.</p>
                 <button onclick="showAddArtifactModal()" 
                         class="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition">
-                    Add Your First Artifact
+                    Add an Artifact
                 </button>
             </div>
 
@@ -330,7 +433,7 @@
                     </div>
 
                     <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                        <h3 class="font-semibold text-blue-900 mb-2">💡 Tip: File Management</h3>
+                        <h3 class="font-semibold text-blue-900 mb-2">ðŸ’¡ Tip: File Management</h3>
                         <p class="text-sm text-blue-800">
                             This tool tracks <strong>metadata only</strong> - it doesn't store your actual files. 
                             Keep your files organized in a folder, and this tool helps you remember which files 
@@ -381,17 +484,7 @@
                                        class="mt-1 mr-3">
                                 <div>
                                     <div class="font-semibold text-gray-800">Task-Specific Checkpoint</div>
-                                    <div class="text-sm text-gray-600">Focused subtask - prevents token pollution in master session</div>
-                                </div>
-                            </label>
-                            
-                            <label class="flex items-start p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-green-500 transition">
-                                <input type="radio" name="checkpointType" value="integration" 
-                                       onchange="updatePromptPreview()"
-                                       class="mt-1 mr-3">
-                                <div>
-                                    <div class="font-semibold text-gray-800">Integration Checkpoint</div>
-                                    <div class="text-sm text-gray-600">Merge completed tasks back together</div>
+                                    <div class="text-sm text-gray-600">Focused subtask - launches separate work session</div>
                                 </div>
                             </label>
                         </div>
@@ -411,11 +504,11 @@
                     <div id="taskFocusSection" class="hidden">
                         <label class="block text-sm font-medium text-gray-700 mb-2">
                             Task Focus
-                            <span class="text-gray-500 text-xs">(What is this session focused on?)</span>
+                            <span class="text-gray-500 text-xs">(What is this subtask focused on?)</span>
                         </label>
                         <input type="text" 
                                id="taskFocusInput" 
-                               placeholder="e.g., revising the introduction"
+                               placeholder="e.g., revising the introduction section"
                                onchange="updatePromptPreview()"
                                oninput="updatePromptPreview()"
                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
@@ -424,21 +517,28 @@
                         </p>
                     </div>
 
-                    <!-- Task List (for integration checkpoints) -->
-                    <div id="taskListSection" class="hidden">
+                    
+                    <!-- Task List (Optional) -->
+                    <div class="mt-4">
                         <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Tasks to Integrate
-                            <span class="text-gray-500 text-xs">(One per line)</span>
+                            Task List (Optional)
+                            <span class="text-gray-500 text-xs ml-1">
+                                One task per line for this checkpoint
+                            </span>
                         </label>
-                        <textarea id="taskListInput" 
-                                  rows="4"
-                                  placeholder="API Overview revision&#10;Quick-Start guide rewrite&#10;Troubleshooting section"
+                        <textarea id="taskListInput"
+                                  rows="3"
+                                  placeholder="- Draft toolkit v1.2 notes
+- Update test guide
+- Export project bundle"
                                   onchange="updatePromptPreview()"
                                   oninput="updatePromptPreview()"
-                                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"></textarea>
+                                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 font-mono text-sm"></textarea>
+                        <p class="text-xs text-gray-500 mt-1">
+                            These tasks will be folded into the generated checkpoint prompt so the AI knows what to focus on.
+                        </p>
                     </div>
-
-                    <!-- Generated Prompt Preview -->
+<!-- Generated Prompt Preview -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">
                             Generated Prompt
@@ -451,7 +551,7 @@
 
                     <!-- Instructions -->
                     <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                        <h3 class="font-semibold text-blue-900 mb-2">📋 How to use:</h3>
+                        <h3 class="font-semibold text-blue-900 mb-2">ðŸ“‹ How to use:</h3>
                         <ol class="text-sm text-blue-800 space-y-1 list-decimal list-inside">
                             <li>Copy the generated prompt below</li>
                             <li>Open a <strong>new AI chat session</strong></li>
@@ -469,7 +569,7 @@
                     </button>
                     <button onclick="copyGeneratedPrompt()" 
                             class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
-                        📋 Copy Prompt
+                        ðŸ“‹ Copy Prompt
                     </button>
                 </div>
             </div>
@@ -532,7 +632,7 @@
                     <div id="extractedArtifactsPreview" class="hidden">
                         <div class="bg-white border-2 border-indigo-200 rounded-lg p-4">
                             <h3 class="font-semibold text-sm mb-3 flex items-center gap-2">
-                                <span>📎</span>
+                                <span>ðŸ“Ž</span>
                                 <span>Extracted Artifacts</span>
                                 <span id="artifactCount" class="text-xs text-gray-500"></span>
                             </h3>
@@ -540,7 +640,7 @@
                                 <!-- Artifacts will be listed here -->
                             </div>
                             <p class="text-xs text-gray-500 mt-2">
-                                ✓ Check to include | ✗ Uncheck to skip
+                                âœ“ Check to include | âœ— Uncheck to skip
                             </p>
                         </div>
                     </div>
@@ -608,7 +708,156 @@
         </div>
     </div>
 
-    <!-- Modal: Import Data -->
+    
+    <!-- Modal: Project Manager -->
+    <div id="projectManagerModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="p-6 space-y-4">
+                <div class="flex justify-between items-center mb-2">
+                    <h2 class="text-2xl font-bold">Projects</h2>
+                    <button onclick="closeProjectManagerModal()" class="text-gray-500 hover:text-gray-700 text-xl">
+                        âœ•
+                    </button>
+                </div>
+
+                <!-- Existing projects -->
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-700 mb-2">Existing Projects</h3>
+                    <div id="projectManagerList" class="space-y-2">
+                        <!-- Filled by JS -->
+                    </div>
+                </div>
+
+                <hr class="my-4">
+
+                <!-- Create new project -->
+                <div class="space-y-2">
+                    <h3 class="text-sm font-semibold text-gray-700">Create New Project</h3>
+                    <div class="flex gap-2">
+                        <input type="text"
+                               id="projectManagerNewProjectName"
+                               placeholder="e.g., Vizier's Guide"
+                               class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                        <button onclick="createProjectFromManager()"
+                                class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
+                            Add
+                        </button>
+                    </div>
+                    <p class="text-xs text-gray-500">
+                        Projects are containers for checkpoints, work logs, and artifacts.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Modal: About / Info -->
+    <div id="aboutModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="p-6 space-y-4">
+                <div class="flex justify-between items-start gap-4">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900">Vizier Preservation Toolkit</h2>
+                        <p class="text-sm text-gray-500 mt-1">Local, disciplined workflow support for multi-session AI projects.</p>
+                    </div>
+                    <button onclick="closeAboutModal()" class="text-gray-500 hover:text-gray-700 text-xl" title="Close">
+                        âœ•
+                    </button>
+                </div>
+
+                <div class="space-y-4 text-sm text-gray-800 leading-relaxed">
+                    <p>
+                        This is a local, browser-based toolkit for managing AI-assisted projects using the Vizier method.
+                        It is designed for disciplined, multi-session workflows where context, decisions, and progress must be preserved across conversations.
+                    </p>
+
+                    <div class="space-y-2">
+                        <h3 class="text-base font-semibold text-gray-900">Core concepts</h3>
+                        <ul class="list-disc pl-5 space-y-1">
+                            <li><span class="font-semibold">Projects</span>: top-level containers. They hold checkpoints, work logs, and artifacts and are managed explicitly through the Projects menu.</li>
+                            <li><span class="font-semibold">Checkpoints</span>: restore points you can paste into a new session.
+                                <ul class="list-disc pl-5 mt-1 space-y-1">
+                                    <li><span class="font-semibold">Master checkpoints</span> capture overall project state.</li>
+                                    <li><span class="font-semibold">Task-specific checkpoints</span> launch focused subtasks with clear scope.</li>
+                                </ul>
+                            </li>
+                            <li><span class="font-semibold">Work Logs</span>: lightweight records of completed work. They are not restore points. They exist to document progress and are designed to be copied into a master thread.</li>
+                            <li><span class="font-semibold">Artifacts</span>: links, files, screenshots, and references associated with a project or checkpoint.</li>
+                        </ul>
+                    </div>
+
+                    <div class="space-y-2">
+                        <h3 class="text-base font-semibold text-gray-900">Prompt generation</h3>
+                        <p>
+                            The checkpoint generator helps structure restore and task-launch prompts. It does not automate thinking or guarantee results.
+                            Prompt quality and outcomes remain the responsibility of the user.
+                        </p>
+                    </div>
+
+                    <div class="space-y-2">
+                        <h3 class="text-base font-semibold text-gray-900">Privacy model</h3>
+                        <ul class="list-disc pl-5 space-y-1">
+                            <li>All data is stored locally in your browser (localStorage).</li>
+                            <li>No accounts, no server, no telemetry.</li>
+                            <li>Export creates a portable JSON file for backup or transfer.</li>
+                        </ul>
+                    </div>
+
+                    <div class="space-y-2">
+                        <h3 class="text-base font-semibold text-gray-900">Recommended workflow</h3>
+                        <ol class="list-decimal pl-5 space-y-1">
+                            <li>Create a Project.</li>
+                            <li>Capture a Master checkpoint when you need a restore point.</li>
+                            <li>Use Task-specific checkpoints to launch focused work.</li>
+                            <li>Record completed work using Work Logs.</li>
+                            <li>Export regularly for backup or versioning.</li>
+                        </ol>
+                    </div>
+
+                    <hr class="my-2">
+
+                    <div class="space-y-2">
+                        <div class="space-y-2 pt-2">
+                        <h3 class="text-base font-semibold text-gray-900">Getting started</h3>
+                        <ol class="list-decimal pl-5 space-y-1">
+                            <li>Create a project.</li>
+                            <li>Capture checkpoints when context matters.</li>
+                            <li>Use work logs to record progress and decisions.</li>
+                            <li>Export regularly as a backup.</li>
+                        </ol>
+                    </div>
+
+                    <h3 class="text-base font-semibold text-gray-900">About Vizier Systems</h3>
+                        <p>
+                            Vizier Systems develops tools and methods for disciplined, multi-session AI workflows.
+                            The Vizier Preservation Toolkit provides structured checkpoints, project-level organization, artifact tracking, and reliable session recovery,
+                            with all data remaining local to your browser.
+                        </p>
+                        <div class="space-y-1">
+                            <div class="font-semibold text-gray-900">Additional resources</div>
+                            <ul class="list-disc pl-5 space-y-1">
+                                <li>Substack: <a class="text-indigo-700 hover:underline" href="https://dunkerfosen.substack.com" target="_blank" rel="noopener noreferrer">dunkerfosen.substack.com</a></li>
+                                <li>GitHub: <a class="text-indigo-700 hover:underline" href="https://github.com/VizierSystems" target="_blank" rel="noopener noreferrer">github.com/VizierSystems</a></li>
+                            </ul>
+                        </div>
+                        <p class="text-xs text-gray-500">
+                            No tracking, analytics, or external services are used.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flex justify-end pt-2">
+                    <button onclick="closeAboutModal()"
+                            class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!-- Modal: Import Data -->
     <div id="importModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
         <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
             <div class="p-6">
@@ -624,7 +873,7 @@
                     </div>
                     <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
                         <p class="text-sm text-yellow-800">
-                            ⚠️ Warning: This will merge with existing data. Export current data first if needed.
+                            âš ï¸ Warning: This will merge with existing data. Export current data first if needed.
                         </p>
                     </div>
                 </div>
@@ -637,6 +886,121 @@
                     <button onclick="importData()" 
                             class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
                         Import
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Export Data -->
+    <div id="exportModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div class="p-6">
+                <h2 class="text-2xl font-bold mb-4">Export Data</h2>
+                <p class="text-gray-600 mb-6">Select which data to export</p>
+                
+                <div class="space-y-4">
+                    <!-- Export All Option -->
+                    <label class="flex items-start p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-indigo-500 transition">
+                        <input type="radio" name="exportOption" value="all" checked 
+                               onchange="updateExportPreview()"
+                               class="mt-1 mr-3">
+                        <div>
+                            <div class="font-semibold text-gray-800">Export Everything</div>
+                            <div class="text-sm text-gray-600">All projects, checkpoints, work logs, and artifacts</div>
+                        </div>
+                    </label>
+
+                    <!-- Select Projects Option -->
+                    <label class="flex items-start p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-indigo-500 transition">
+                        <input type="radio" name="exportOption" value="selective" 
+                               onchange="updateExportPreview()"
+                               class="mt-1 mr-3">
+                        <div class="flex-1">
+                            <div class="font-semibold text-gray-800">Select Specific Projects</div>
+                            <div class="text-sm text-gray-600 mb-2">Choose which projects to export</div>
+                            
+                            <!-- Project checkboxes (shown when selective is selected) -->
+                            <div id="projectCheckboxes" class="mt-3 space-y-2 hidden">
+                                <!-- Will be populated dynamically -->
+                            </div>
+                        </div>
+                    </label>
+
+                    <!-- Export Preview -->
+                    <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                        <div class="text-sm font-medium text-gray-700 mb-2">Export will include:</div>
+                        <div id="exportPreview" class="text-sm text-gray-600">
+                            <!-- Will be updated dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-6 flex gap-4 justify-end">
+                    <button onclick="closeExportModal()" 
+                            class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+                        Cancel
+                    </button>
+                    <button onclick="performExport()" 
+                            class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
+                        ðŸ“¤ Export
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Clear All Data -->
+    <div id="clearAllDataModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
+            <div class="p-6">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="bg-red-100 p-3 rounded-full">
+                        <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                        </svg>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-900">Clear All Data</h2>
+                </div>
+                
+                <div class="space-y-4">
+                    <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                        <p class="text-sm text-red-800 font-medium mb-2">âš ï¸ This will permanently delete:</p>
+                        <ul class="text-sm text-red-700 space-y-1 ml-4">
+                            <li id="clearDataProjectCount">â€¢ All projects</li>
+                            <li id="clearDataCheckpointCount">â€¢ All checkpoints</li>
+                            <li id="clearDataWorklogCount">â€¢ All work logs</li>
+                            <li id="clearDataArtifactCount">â€¢ All artifacts</li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                        <p class="text-sm text-yellow-800">
+                            <strong>This cannot be undone.</strong> Export your data first if you need a backup.
+                        </p>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Type <span class="font-mono bg-gray-100 px-2 py-1 rounded">DELETE</span> to confirm:
+                        </label>
+                        <input type="text" 
+                               id="clearDataConfirmation" 
+                               placeholder="Type DELETE here"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500">
+                    </div>
+                </div>
+
+                <div class="mt-6 flex gap-4 justify-end">
+                    <button onclick="closeClearAllDataModal()" 
+                            class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+                        Cancel
+                    </button>
+                    <button onclick="performClearAllData()" 
+                            id="clearAllDataButton"
+                            disabled
+                            class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition disabled:bg-gray-300 disabled:cursor-not-allowed">
+                        ðŸ—‘ï¸ Clear All Data
                     </button>
                 </div>
             </div>
@@ -665,17 +1029,26 @@
                 </div>
 
                 <div class="flex gap-4 justify-end">
+                    <button onclick="editCurrentCheckpoint()" 
+                            class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                        âœï¸ Edit
+                    </button>
                     <button onclick="generateRestorationPromptFromModal()" 
                             class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
-                        🔄 Generate Restoration Prompt
+                        ðŸ”„ Generate Restoration Prompt
                     </button>
                     <button onclick="copyCheckpointToClipboard()" 
                             class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
-                        📋 Copy to Clipboard
+                        ðŸ“‹ Copy to Clipboard
+                    </button>
+
+                    <button onclick="downloadCurrentCheckpointTxt()" 
+                            class="px-6 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition">
+                        ðŸ“„ Download checkpoint (.txt)
                     </button>
                     <button onclick="deleteCurrentCheckpoint()" 
                             class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
-                        🗑️ Delete
+                        ðŸ—‘ï¸ Delete
                     </button>
                 </div>
             </div>
@@ -706,25 +1079,279 @@
                 <div class="flex justify-end gap-4">
                     <button onclick="copyRestorationPrompt()" 
                             class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
-                        📋 Copy Restoration Prompt
+                        ðŸ“‹ Copy Restoration Prompt
                     </button>
                     <button onclick="closeRestorationPromptModal()" 
                             class="px-6 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition">
-                        ✕ Close
+                        âœ• Close
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Modal: Work Log Generator -->
+    <div id="workLogGeneratorModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="p-6">
+                <h2 class="text-2xl font-bold mb-4">âš¡ Generate Work Log Template</h2>
+                <p class="text-gray-600 mb-6">Create a structured template for documenting your progress</p>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Project</label>
+                        <select id="worklogPromptProjectSelect" 
+                                onchange="updateWorkLogPromptPreview()"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                            <option value="">Select Project...</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Link to Checkpoint (Optional)
+                            <span class="text-gray-500 text-xs ml-1">(Document work done since this checkpoint)</span>
+                        </label>
+                        <select id="worklogPromptCheckpointSelect" 
+                                onchange="updateWorkLogPromptPreview()"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                            <option value="">Not linked to any checkpoint</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Generated Template:</label>
+                        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                            <pre id="generatedWorkLogPrompt" class="whitespace-pre-wrap font-mono text-sm text-gray-800"></pre>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-6 flex gap-4 justify-end">
+                    <button onclick="closeWorkLogGeneratorModal()" 
+                            class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+                        Cancel
+                    </button>
+                    <button onclick="copyGeneratedWorkLogPrompt()" 
+                            class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
+                        ðŸ“‹ Copy Template
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Save Work Log -->
+    <div id="saveWorkLogModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="p-6">
+                <h2 class="text-2xl font-bold mb-4">Save Work Log</h2>
+                <p class="text-gray-600 mb-6">Document what was accomplished in this work session</p>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Project *</label>
+                        <select id="worklogProject" 
+                                onchange="updateWorkLogCheckpointDropdown()"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                            <option value="">Select Project...</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Title/Summary *
+                            <span class="text-gray-500 text-xs ml-1">(Brief description of the work)</span>
+                        </label>
+                        <input type="text" 
+                               id="worklogTitle" 
+                               placeholder="e.g., Completed initial research phase"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Link to Checkpoint (Optional)
+                            <span class="text-gray-500 text-xs ml-1">(Work done since this checkpoint)</span>
+                        </label>
+                        <select id="worklogCheckpoint" 
+                                onchange="handleWorkLogCheckpointChange()" 
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                            <option value="">Not linked to any checkpoint</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Work Log Content *
+                            <span class="text-gray-500 text-xs ml-1">(Paste AI-generated work log or write your own)</span>
+                        </label>
+                        <textarea id="worklogContent" 
+                                  rows="12" 
+                                  oninput="autoFillWorkLogTitleFromContent()" 
+                                  placeholder="What was done in this session:
+- 
+- 
+
+What was produced:
+- 
+
+Key decisions made:
+- 
+
+Recommendations for next steps:
+- "
+                                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 font-mono text-sm">
+                        </textarea>
+                    </div>
+                </div>
+
+                <div class="mt-6 flex gap-4 justify-end">
+                    <button onclick="closeSaveWorkLogModal()" 
+                            class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
+                        Cancel
+                    </button>
+                    <button onclick="saveWorkLog()" 
+                            class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
+                        Save Work Log
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: View Work Log -->
+    <div id="viewWorkLogModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="p-6">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <h2 class="text-2xl font-bold" id="viewWorkLogTitle">Work Log</h2>
+                        <p class="text-gray-500 text-sm mt-1" id="viewWorkLogMeta"></p>
+                    </div>
+                    <button onclick="closeViewWorkLogModal()" 
+                            class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
+                    <pre id="viewWorkLogContent" class="whitespace-pre-wrap font-mono text-sm text-gray-800"></pre>
+                </div>
+
+                <div class="flex gap-4 justify-end">
+                    <button onclick="editCurrentWorkLog()" 
+                            class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                        âœï¸ Edit
+                    </button>
+                    <button onclick="copyWorkLogToClipboard()" 
+                            class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
+                        ðŸ“‹ Copy to Clipboard
+                    </button>
+                    <button onclick="deleteCurrentWorkLog()" 
+                            class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
+                        ðŸ—‘ï¸ Delete
+                    </button>
+             
+        
     <script>
-        // ===================================
+
+// ===================================
         // DATA STORAGE & STATE MANAGEMENT
         // ===================================
 
         const STORAGE_KEY = 'vizier_toolkit_data';
         let currentData = null;
         let currentViewingCheckpoint = null;
+
+// Current project (used as a default context across tabs/modals)
+const CURRENT_PROJECT_KEY = 'vizier_toolkit_current_project';
+let currentProjectId = null;
+
+function loadCurrentProjectId() {
+    try {
+        const stored = localStorage.getItem(CURRENT_PROJECT_KEY);
+        currentProjectId = stored ? stored : null;
+
+        // Validate against current projects list
+        if (currentProjectId && (!currentData || !currentData.projects || !currentData.projects.some(p => p.id === currentProjectId))) {
+            currentProjectId = null;
+            localStorage.removeItem(CURRENT_PROJECT_KEY);
+        }
+    } catch (e) {
+        currentProjectId = null;
+    }
+}
+
+function persistCurrentProjectId() {
+    try {
+        if (currentProjectId) localStorage.setItem(CURRENT_PROJECT_KEY, currentProjectId);
+        else localStorage.removeItem(CURRENT_PROJECT_KEY);
+    } catch (e) { /* ignore */ }
+}
+
+function getProjectNameById(projectId) {
+    const p = currentData && currentData.projects ? currentData.projects.find(pr => pr.id === projectId) : null;
+    return p ? p.name : null;
+}
+
+function setCurrentProject(projectId) {
+    currentProjectId = projectId || null;
+    persistCurrentProjectId();
+    updateProjectContextIndicator();
+    applyCurrentProjectToFilters();
+}
+
+function updateProjectContextIndicator() {
+    const el = document.getElementById('projectContextIndicator');
+    if (!el) return;
+
+    const name = currentProjectId ? (getProjectNameById(currentProjectId) || 'Unknown Project') : 'All Projects';
+    el.textContent = `Project: ${name}`;
+}
+
+function applyCurrentProjectToFilters() {
+    if (!currentProjectId) return;
+
+    // Default the per-tab filters to the current project (but never change currentProjectId here).
+    const checkpointsFilter = document.getElementById('projectFilter');
+    if (checkpointsFilter && (checkpointsFilter.value === 'all' || checkpointsFilter.value === '' || checkpointsFilter.value === 'All Projects')) {
+        // only set if the option exists
+        if ([...checkpointsFilter.options].some(o => o.value === currentProjectId)) {
+            checkpointsFilter.value = currentProjectId;
+            if (typeof filterCheckpoints === 'function') filterCheckpoints();
+        }
+    }
+
+    const worklogsFilter = document.getElementById('worklogProjectFilter');
+    if (worklogsFilter && (worklogsFilter.value === 'all' || worklogsFilter.value === '' || worklogsFilter.value === 'All Projects')) {
+        if ([...worklogsFilter.options].some(o => o.value === currentProjectId)) {
+            worklogsFilter.value = currentProjectId;
+            if (typeof filterWorkLogs === 'function') filterWorkLogs();
+        }
+    }
+
+    const artifactsFilter = document.getElementById('artifactProjectFilter');
+    if (artifactsFilter && (artifactsFilter.value === 'all' || artifactsFilter.value === '' || artifactsFilter.value === 'All Projects')) {
+        if ([...artifactsFilter.options].some(o => o.value === currentProjectId)) {
+            artifactsFilter.value = currentProjectId;
+            if (typeof filterArtifacts === 'function') filterArtifacts();
+        }
+    }
+}
+
+function applyCurrentProjectToSelect(selectId) {
+    if (!currentProjectId) return;
+    const sel = document.getElementById(selectId);
+    if (!sel) return;
+    if ([...sel.options].some(o => o.value === currentProjectId)) {
+        sel.value = currentProjectId;
+    }
+}
+
+
 
         // Initialize data structure
         function initData() {
@@ -735,11 +1362,16 @@
                 if (!currentData.artifacts) {
                     currentData.artifacts = [];
                 }
+                // Ensure worklogs array exists
+                if (!currentData.worklogs) {
+                    currentData.worklogs = [];
+                }
             } else {
                 currentData = {
-                    version: "1.0.0",
+                    version: "1.2.0-inc2",
                     projects: [],
-                    artifacts: []
+                    artifacts: [],
+                    worklogs: []
                 };
                 saveData();
             }
@@ -760,53 +1392,90 @@
         // ===================================
 
         const PROMPT_TEMPLATES = {
-            master: (projectName) => `Create a checkpoint that includes:
+            master: (projectName, taskList) => {
+                let base = `Create a checkpoint that includes:
 - What we completed
 - The current plan
 - Important decisions
 - Files we used
-- What we do next`,
+- What we do next
 
-            task: (taskFocus, projectName) => `Create a checkpoint for beginning the next session focused on ${taskFocus} that includes:
-- What we completed on ${taskFocus}
-- The current plan for ${taskFocus}
-- Important decisions related to ${taskFocus}
-- Files we used for ${taskFocus}
-- What we do next on ${taskFocus}
+Project: ${projectName}`;
 
-This is a task-specific checkpoint scoped to: ${taskFocus}
-Parent project: ${projectName}`,
+                if (taskList && taskList.trim()) {
+                    base += `
 
-            integration: (taskList, projectName) => {
-                const tasks = taskList.split('\n').filter(t => t.trim());
-                const taskListFormatted = tasks.map(t => `- ${t.trim()}`).join('\n');
-                const taskNames = tasks.map(t => t.trim()).join(', ');
-                
-                return `Create a checkpoint that integrates the following completed tasks:
-${taskListFormatted}
+Task list or areas covered in this checkpoint:
+${taskList.trim()}`;
+                }
+
+                return base;
+            },
+
+            task: (taskFocus, projectName, taskList) => {
+                let base = `Create a task-specific checkpoint for a new subtask.
 
 Include:
-- What we completed across all integrated tasks
-- The current plan after integration
-- Important decisions from the merged work
-- Files we used across all tasks
-- What we do next with the integrated result
+â€“ A structured task instruction (the Opening Phrase for this subtask)
+â€“ The minimal context this subtask needs
+â€“ What the subtask must accomplish or produce
+â€“ Any constraints, definitions, or reference materials needed
+â€“ Success criteria for the subtask
+â€“ Any risks, ambiguities, or decisions expected during the task
 
-This is an integration checkpoint merging: ${taskNames}
+Task focus: ${taskFocus}
 Parent project: ${projectName}`;
+
+                if (taskList && taskList.trim()) {
+                    base += `
+
+Tasks or bullet points to cover in this subtask:
+${taskList.trim()}`;
+                }
+
+                base += `
+
+This task-specific checkpoint launches a separate subtask and does not modify the master checkpoint.`;
+
+                return base;
             }
+        };
+
+        const WORKLOG_TEMPLATE = (projectName, checkpointLabel) => {
+            let template = `Create a Work Log that summarizes the completed work in this session.
+
+Include:
+â€“ What was done in this session
+â€“ What was produced (the deliverable), or where it can be found
+â€“ Key decisions made
+â€“ Any changes to assumptions, definitions, or understanding
+â€“ Any risks, dependencies, or open questions
+â€“ Recommendations for how the main project should proceed
+
+Write the Work Log so it can be copied into the master thread and understood without referencing the rest of this conversation.
+
+Project: ${projectName}`;
+            
+            if (checkpointLabel) {
+                template += `\nWork completed since checkpoint: ${checkpointLabel}`;
+            }
+            
+            template += `\n\nDo not generate a checkpoint. This is a Work Log only.`;
+            
+            return template;
         };
 
         function updatePromptPreview() {
             const type = document.querySelector('input[name="checkpointType"]:checked').value;
             const projectId = document.getElementById('promptProjectSelect').value;
             const taskFocusSection = document.getElementById('taskFocusSection');
-            const taskListSection = document.getElementById('taskListSection');
             const promptDisplay = document.getElementById('generatedPrompt');
+            const taskList = document.getElementById('taskListInput')
+                ? document.getElementById('taskListInput').value
+                : '';
 
             // Show/hide relevant sections
             taskFocusSection.classList.toggle('hidden', type !== 'task');
-            taskListSection.classList.toggle('hidden', type !== 'integration');
 
             // Get project name
             let projectName = 'Your Project';
@@ -817,15 +1486,12 @@ Parent project: ${projectName}`;
 
             // Generate prompt based on type
             let prompt = '';
-            
+
             if (type === 'master') {
-                prompt = PROMPT_TEMPLATES.master(projectName);
+                prompt = PROMPT_TEMPLATES.master(projectName, taskList);
             } else if (type === 'task') {
                 const taskFocus = document.getElementById('taskFocusInput').value.trim() || '[task focus here]';
-                prompt = PROMPT_TEMPLATES.task(taskFocus, projectName);
-            } else if (type === 'integration') {
-                const taskList = document.getElementById('taskListInput').value.trim() || '[task list here]';
-                prompt = PROMPT_TEMPLATES.integration(taskList, projectName);
+                prompt = PROMPT_TEMPLATES.task(taskFocus, projectName, taskList);
             }
 
             promptDisplay.textContent = prompt;
@@ -856,24 +1522,26 @@ Parent project: ${projectName}`;
         function showPromptGeneratorModal() {
             const modal = document.getElementById('promptGeneratorModal');
             const projectSelect = document.getElementById('promptProjectSelect');
-            
+
             // Update project dropdown
             projectSelect.innerHTML = '<option value="">Select Project...</option>';
             currentData.projects.forEach(project => {
-                projectSelect.innerHTML += `<option value="${project.id}">${project.name}</option>`;
+                projectSelect.innerHTML += `<option value="${escapeHtml(project.id)}">${escapeHtml(project.name)}</option>`;
             });
 
             // Reset form
             document.querySelector('input[name="checkpointType"][value="master"]').checked = true;
             document.getElementById('taskFocusInput').value = '';
-            document.getElementById('taskListInput').value = '';
-            
-            modal.classList.remove('hidden');
-            
+            const taskListEl = document.getElementById('taskListInput');
+            if (taskListEl) taskListEl.value = '';
+
+                        applyCurrentProjectToSelect('promptProjectSelect');
+modal.classList.remove('hidden');
+
             // Reset scroll position
             const modalContent = modal.querySelector('.overflow-y-auto');
             if (modalContent) modalContent.scrollTop = 0;
-            
+
             updatePromptPreview();
         }
 
@@ -882,11 +1550,628 @@ Parent project: ${projectName}`;
         }
 
         // ===================================
+        // WORK LOG MANAGEMENT
+        // ===================================
+
+        let currentViewingWorkLog = null;
+
+        function showWorkLogGeneratorModal() {
+            const modal = document.getElementById('workLogGeneratorModal');
+            const projectSelect = document.getElementById('worklogPromptProjectSelect');
+            const checkpointSelect = document.getElementById('worklogPromptCheckpointSelect');
+            
+            // Update project dropdown
+            projectSelect.innerHTML = '<option value="">Select Project...</option>';
+            currentData.projects.forEach(project => {
+                projectSelect.innerHTML += `<option value="${escapeHtml(project.id)}">${escapeHtml(project.name)}</option>`;
+            });
+
+            // Reset checkpoint dropdown
+            checkpointSelect.innerHTML = '<option value="">Not linked to any checkpoint</option>';
+            
+                        applyCurrentProjectToSelect('worklogPromptProjectSelect');
+modal.classList.remove('hidden');
+            updateWorkLogPromptPreview();
+        }
+
+        function closeWorkLogGeneratorModal() {
+            document.getElementById('workLogGeneratorModal').classList.add('hidden');
+        }
+
+        function updateWorkLogPromptPreview() {
+            const projectId = document.getElementById('worklogPromptProjectSelect').value;
+            const checkpointId = document.getElementById('worklogPromptCheckpointSelect').value;
+            const promptDisplay = document.getElementById('generatedWorkLogPrompt');
+
+            // Update checkpoint dropdown when project changes
+            const checkpointSelect = document.getElementById('worklogPromptCheckpointSelect');
+            if (projectId) {
+                const project = getProject(projectId);
+                if (project) {
+                    checkpointSelect.innerHTML = '<option value="">Not linked to any checkpoint</option>';
+                    if (project.checkpoints && project.checkpoints.length > 0) {
+                        project.checkpoints.forEach(cp => {
+                            const label = getCheckpointLabel(cp);
+                            checkpointSelect.innerHTML += `<option value="${escapeHtml(cp.id)}">${escapeHtml(label)}</option>`;
+                        });
+                    }
+                }
+            }
+
+            // Get project name and checkpoint label
+            let projectName = 'Your Project';
+            let checkpointLabel = null;
+            
+            if (projectId) {
+                const project = getProject(projectId);
+                if (project) projectName = project.name;
+                
+                if (checkpointId && project) {
+                    const checkpoint = project.checkpoints.find(cp => cp.id === checkpointId);
+                    if (checkpoint) {
+                        checkpointLabel = getCheckpointLabel(checkpoint);
+                    }
+                }
+            }
+
+            // Generate work log template
+            const prompt = WORKLOG_TEMPLATE(projectName, checkpointLabel);
+            promptDisplay.textContent = prompt;
+        }
+
+        function copyGeneratedWorkLogPrompt() {
+            const prompt = document.getElementById('generatedWorkLogPrompt').textContent;
+            
+            if (!prompt) {
+                alert('No template generated');
+                return;
+            }
+
+            navigator.clipboard.writeText(prompt).then(() => {
+                showNotification('Work Log template copied! Paste into AI session.', 'success');
+            }).catch(err => {
+                // Fallback
+                const textarea = document.createElement('textarea');
+                textarea.value = prompt;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                showNotification('Work Log template copied! Paste into AI session.', 'success');
+            });
+        }
+
+        function showSaveWorkLogModal() {
+            const modal = document.getElementById('saveWorkLogModal');
+            const projectSelect = document.getElementById('worklogProject');
+            const checkpointSelect = document.getElementById('worklogCheckpoint');
+            
+            // Update project dropdown
+            projectSelect.innerHTML = '<option value="">Select Project...</option>';
+            currentData.projects.forEach(project => {
+                projectSelect.innerHTML += `<option value="${escapeHtml(project.id)}">${escapeHtml(project.name)}</option>`;
+            });
+
+            // Reset form
+            document.getElementById('worklogTitle').value = '';
+            document.getElementById('worklogContent').value = '';
+            checkpointSelect.innerHTML = '<option value="">Not linked to any checkpoint</option>';
+            
+            // Reset to create mode
+            window.editingWorkLogId = null;
+            document.querySelector('#saveWorkLogModal h2').textContent = 'Save Work Log';
+            document.querySelector('#saveWorkLogModal button[onclick="saveWorkLog()"]').textContent = 'Save Work Log';
+            
+            modal.classList.remove('hidden');
+updateProjectDropdowns(document.getElementById('worklogProject'));
+            applyCurrentProjectToSelect('worklogProject');
+        }
+
+        function closeSaveWorkLogModal() {
+            document.getElementById('saveWorkLogModal').classList.add('hidden');
+            
+            // Clear editing flag
+            window.editingWorkLogId = null;
+            
+            // Reset modal title and button text
+            document.querySelector('#saveWorkLogModal h2').textContent = 'Save Work Log';
+            document.querySelector('#saveWorkLogModal button[onclick="saveWorkLog()"]').textContent = 'Save Work Log';
+        }
+
+        function saveWorkLog() {
+            const projectId = document.getElementById('worklogProject').value;
+            const title = document.getElementById('worklogTitle').value.trim();
+            const content = document.getElementById('worklogContent').value.trim();
+            const checkpointId = document.getElementById('worklogCheckpoint').value;
+
+            if (!projectId) {
+                alert('Please select a project');
+                return;
+            }
+
+            if (!title) {
+                alert('Please enter a title');
+                return;
+            }
+
+            if (!content) {
+                alert('Please enter work log content');
+                return;
+            }
+
+            const project = getProject(projectId);
+            if (!project) {
+                alert('Project not found');
+                return;
+            }
+
+            // Check if we're editing an existing work log
+            if (window.editingWorkLogId) {
+                const worklog = currentData.worklogs.find(wl => wl.id === window.editingWorkLogId);
+                if (worklog) {
+                    worklog.projectId = projectId;
+                    worklog.title = title;
+                    worklog.content = content;
+                    worklog.checkpointId = checkpointId || null;
+                    worklog.timestamp = new Date().toISOString(); // Update timestamp
+                    
+                    saveData();
+                    closeSaveWorkLogModal();
+                    renderWorkLogs();
+                    showNotification('Work Log updated successfully!', 'success');
+                    
+                    // Clear editing flag
+                    window.editingWorkLogId = null;
+                    return;
+                }
+            }
+
+            // Create new work log
+            const worklog = {
+                id: generateId('wl'),
+                projectId: projectId,
+                title: title,
+                content: content,
+                checkpointId: checkpointId || null,
+                timestamp: new Date().toISOString()
+            };
+
+            currentData.worklogs.push(worklog);
+            saveData();
+            closeSaveWorkLogModal();
+            renderWorkLogs();
+            showNotification('Work Log saved successfully!', 'success');
+        }
+
+        function updateWorkLogCheckpointDropdown() {
+            const projectId = document.getElementById('worklogProject').value;
+            const checkpointSelect = document.getElementById('worklogCheckpoint');
+
+            checkpointSelect.innerHTML = '<option value="">Not linked to any checkpoint</option>';
+
+            if (!projectId) return;
+
+            const project = getProject(projectId);
+            if (project && project.checkpoints && project.checkpoints.length > 0) {
+                project.checkpoints.forEach(cp => {
+                    const label = getCheckpointLabel(cp);
+                    checkpointSelect.innerHTML += `<option value="${cp.id}">${escapeHtml(label)}</option>`;
+                });
+            }
+        }
+
+        function handleWorkLogCheckpointChange() {
+            const titleInput = document.getElementById('worklogTitle');
+            const projectId = document.getElementById('worklogProject').value;
+            const checkpointId = document.getElementById('worklogCheckpoint').value;
+
+            // Only auto-fill if the title is still empty
+            if (!titleInput || titleInput.value.trim() || !projectId || !checkpointId) return;
+
+            const project = getProject(projectId);
+            if (!project || !project.checkpoints) return;
+
+            const checkpoint = project.checkpoints.find(cp => cp.id === checkpointId);
+            if (!checkpoint) return;
+
+            const cpLabel = getCheckpointLabel(checkpoint);
+            titleInput.value = `Work Log - ${cpLabel}`;
+        }
+
+        function autoFillWorkLogTitleFromContent() {
+            const titleInput = document.getElementById('worklogTitle');
+            const contentEl = document.getElementById('worklogContent');
+            if (!titleInput || !contentEl) return;
+
+            // Do not overwrite a user-provided title
+            if (titleInput.value && titleInput.value.trim()) return;
+
+            const content = (contentEl.value || '').trim();
+            if (!content) return;
+
+            const lines = content.split(/\r?\n/).map(l => l.trim());
+            const skipPrefixes = [
+                'what was done', 'what was produced', 'key decisions',
+                'any changes', 'any risks', 'recommendations', 'end of work log',
+                'include:'
+            ];
+
+            function normalizeLine(line) {
+                if (line.startsWith('- ')) return line.substring(2).trim();
+                if (line.startsWith('â€¢ ')) return line.substring(2).trim();
+                return line;
+            }
+
+            let candidate = '';
+            for (let raw of lines) {
+                if (!raw) continue;
+                const line = normalizeLine(raw);
+                const lower = line.toLowerCase();
+
+                // Skip obvious section headers and boilerplate
+                if (skipPrefixes.some(p => lower.startsWith(p))) continue;
+                if (line.endsWith(':') && line.length < 80) continue;
+
+                // If the paste includes a title-like prefix ("Work Log - ...")
+                if (lower.startsWith('work log')) {
+                    candidate = line.replace(/^work\s*log\s*[-â€“:]+\s*/i, '').trim();
+                    if (candidate) break;
+                }
+
+                // Otherwise use the first meaningful line
+                if (line.length >= 6) {
+                    candidate = line;
+                    break;
+                }
+            }
+
+            if (!candidate) return;
+
+            const maxLen = 80;
+            if (candidate.length > maxLen) candidate = candidate.substring(0, maxLen - 1) + 'â€¦';
+            titleInput.value = candidate;
+        }
+
+
+
+        function renderWorkLogs() {
+            const container = document.getElementById('worklogsList');
+            const emptyState = document.getElementById('worklogsEmptyState');
+            updateProjectContextIndicator();
+            
+            if (currentData.worklogs.length === 0) {
+                container.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+
+            // Apply filters
+            const searchTerm = document.getElementById('worklogSearchInput').value.toLowerCase();
+            const projectFilter = document.getElementById('worklogProjectFilter').value;
+            const sortOrder = document.getElementById('worklogSortOrder').value;
+            const checkpointFilter = window.activeCheckpointFilter || null;
+
+            let filtered = currentData.worklogs.filter(wl => {
+                const project = getProject(wl.projectId);
+                const matchesSearch = !searchTerm || 
+                    wl.title.toLowerCase().includes(searchTerm) ||
+                    wl.content.toLowerCase().includes(searchTerm) ||
+                    (project && project.name.toLowerCase().includes(searchTerm));
+                
+                const matchesProject = !projectFilter || wl.projectId === projectFilter;
+                const matchesCheckpoint = !checkpointFilter || wl.checkpointId === checkpointFilter;
+                
+                return matchesSearch && matchesProject && matchesCheckpoint;
+            });
+
+            // Sort
+            if (sortOrder === 'newest') {
+                filtered.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            } else if (sortOrder === 'oldest') {
+                filtered.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+            } else if (sortOrder === 'project') {
+                filtered.sort((a, b) => {
+                    const projA = getProject(a.projectId);
+                    const projB = getProject(b.projectId);
+                    return (projA?.name || '').localeCompare(projB?.name || '');
+                });
+            }
+
+            // Render
+            container.innerHTML = filtered.map(wl => {
+                const project = getProject(wl.projectId);
+                const projectName = project ? project.name : 'Unknown Project';
+                
+                let checkpointInfo = '';
+                if (wl.checkpointId && project) {
+                    const checkpoint = project.checkpoints.find(cp => cp.id === wl.checkpointId);
+                    if (checkpoint) {
+                        const cpLabel = getCheckpointLabel(checkpoint);
+                        checkpointInfo = `<button onclick="viewCheckpoint('${wl.projectId}', '${wl.checkpointId}')" 
+                                                  class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded hover:bg-blue-200 transition cursor-pointer"
+                                                  title="View checkpoint">
+                                            ðŸ”— Linked to: ${escapeHtml(cpLabel)}
+                                          </button>`;
+                    }
+                }
+
+                return `
+                    <div class="checkpoint-card bg-white rounded-lg shadow-md p-6">
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-900">${escapeHtml(wl.title)}</h3>
+                                <p class="text-sm text-gray-600 mt-1">
+                                    <span class="font-medium">${escapeHtml(projectName)}</span>
+                                    <span class="mx-2">â€¢</span>
+                                    <span>${formatDate(wl.timestamp)}</span>
+                                </p>
+                                ${checkpointInfo ? `<p class="mt-2">${checkpointInfo}</p>` : ''}
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gray-50 border border-gray-200 rounded p-3 mb-4">
+                            <pre class="text-xs text-gray-700 whitespace-pre-wrap font-mono line-clamp-4">${escapeHtml(wl.content.substring(0, 300))}${wl.content.length > 300 ? '...' : ''}</pre>
+                        </div>
+
+                        <div class="flex gap-2">
+                            <button onclick="viewWorkLog('${wl.id}')" 
+                                    class="text-sm px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition">
+                                View Full Log
+                            </button>
+                            <button onclick="editWorkLog('${wl.id}')" 
+                                    class="text-sm px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
+                                âœï¸ Edit
+                            </button>
+                            <button onclick="copyWorkLog('${wl.id}')" 
+                                    class="text-sm px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition">
+                                ðŸ“‹ Copy
+                            </button>
+                            <button onclick="deleteWorkLog('${wl.id}')" 
+                                    class="text-sm px-4 py-2 bg-red-100 text-red-700 rounded hover:bg-red-200 transition">
+                                ðŸ—‘ï¸ Delete
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function filterWorkLogs() {
+            // Clear active checkpoint filter when user manually filters
+            window.activeCheckpointFilter = null;
+            
+            // Hide filter indicator
+            const indicator = document.getElementById('activeCheckpointFilterIndicator');
+            if (indicator) indicator.classList.add('hidden');
+            
+            renderWorkLogs();
+        }
+
+        function filterWorkLogsByCheckpoint(checkpointId) {
+            // Switch to work logs tab
+            switchTab('worklogs');
+            
+            // Find the checkpoint to get its label for display
+            let checkpointLabel = 'checkpoint';
+            for (const project of currentData.projects) {
+                const checkpoint = project.checkpoints.find(cp => cp.id === checkpointId);
+                if (checkpoint) {
+                    checkpointLabel = getCheckpointLabel(checkpoint);
+                    break;
+                }
+            }
+            
+            // Clear search input and set a temporary filter
+            document.getElementById('worklogSearchInput').value = '';
+            
+            // Store the filter state
+            window.activeCheckpointFilter = checkpointId;
+            
+            // Show filter indicator
+            showCheckpointFilterIndicator(checkpointLabel);
+            
+            // Render filtered work logs
+            renderWorkLogs();
+            
+            // Show notification
+            showNotification(`Showing work logs linked to: ${checkpointLabel}`, 'info');
+        }
+
+        function showCheckpointFilterIndicator(label) {
+            const indicator = document.getElementById('activeCheckpointFilterIndicator');
+            const labelElement = document.getElementById('activeCheckpointFilterLabel');
+            
+            labelElement.textContent = `"${label}"`;
+            indicator.classList.remove('hidden');
+        }
+
+        function clearCheckpointFilter() {
+            window.activeCheckpointFilter = null;
+            
+            const indicator = document.getElementById('activeCheckpointFilterIndicator');
+            indicator.classList.add('hidden');
+            
+            renderWorkLogs();
+            showNotification('Checkpoint filter cleared', 'info');
+        }
+
+
+        function filterArtifactsByCheckpoint(checkpointId) {
+            // Switch to artifacts tab
+            switchTab('artifacts');
+
+            // Find the checkpoint label for display
+            let checkpointLabel = 'checkpoint';
+            for (const project of currentData.projects) {
+                const checkpoint = project.checkpoints.find(cp => cp.id === checkpointId);
+                if (checkpoint) {
+                    checkpointLabel = getCheckpointLabel(checkpoint);
+                    break;
+                }
+            }
+
+            // Clear manual filters
+            document.getElementById('artifactSearchInput').value = '';
+            document.getElementById('artifactProjectFilter').value = '';
+            document.getElementById('artifactTypeFilter').value = '';
+
+            // Store filter state
+            window.activeArtifactCheckpointFilter = checkpointId;
+
+            // Show indicator
+            showArtifactCheckpointFilterIndicator(checkpointLabel);
+
+            // Render filtered artifacts
+            renderArtifacts();
+
+            showNotification(`Showing artifacts linked to: ${checkpointLabel}`, 'info');
+        }
+
+        function showArtifactCheckpointFilterIndicator(label) {
+            const indicator = document.getElementById('activeArtifactCheckpointFilterIndicator');
+            const labelElement = document.getElementById('activeArtifactCheckpointFilterLabel');
+
+            if (!indicator || !labelElement) return;
+
+            labelElement.textContent = `"${label}"`;
+            indicator.classList.remove('hidden');
+        }
+
+        function clearArtifactCheckpointFilter() {
+            window.activeArtifactCheckpointFilter = null;
+
+            const indicator = document.getElementById('activeArtifactCheckpointFilterIndicator');
+            if (indicator) indicator.classList.add('hidden');
+
+            renderArtifacts();
+            showNotification('Checkpoint filter cleared', 'info');
+        }
+
+
+        function viewWorkLog(worklogId) {
+            const worklog = currentData.worklogs.find(wl => wl.id === worklogId);
+            if (!worklog) {
+                alert('Work Log not found');
+                return;
+            }
+
+            const project = getProject(worklog.projectId);
+            const projectName = project ? project.name : 'Unknown Project';
+
+            document.getElementById('viewWorkLogTitle').textContent = worklog.title;
+            
+            let meta = `${projectName} â€¢ ${formatDate(worklog.timestamp)}`;
+            if (worklog.checkpointId && project) {
+                const checkpoint = project.checkpoints.find(cp => cp.id === worklog.checkpointId);
+                if (checkpoint) {
+                    const cpLabel = getCheckpointLabel(checkpoint);
+                    meta += ` â€¢ Linked to: ${cpLabel}`;
+                }
+            }
+            document.getElementById('viewWorkLogMeta').textContent = meta;
+            document.getElementById('viewWorkLogContent').textContent = worklog.content;
+            
+            currentViewingWorkLog = worklog;
+            document.getElementById('viewWorkLogModal').classList.remove('hidden');
+        }
+
+        function closeViewWorkLogModal() {
+            document.getElementById('viewWorkLogModal').classList.add('hidden');
+            currentViewingWorkLog = null;
+        }
+
+        function copyWorkLog(worklogId) {
+            const worklog = currentData.worklogs.find(wl => wl.id === worklogId);
+            if (!worklog) return;
+
+            navigator.clipboard.writeText(worklog.content).then(() => {
+                showNotification('Work Log copied to clipboard!', 'success');
+            }).catch(err => {
+                const textarea = document.createElement('textarea');
+                textarea.value = worklog.content;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                showNotification('Work Log copied to clipboard!', 'success');
+            });
+        }
+
+        function copyWorkLogToClipboard() {
+            if (!currentViewingWorkLog) return;
+            copyWorkLog(currentViewingWorkLog.id);
+        }
+
+        function editWorkLog(worklogId) {
+            const worklog = currentData.worklogs.find(wl => wl.id === worklogId);
+            if (!worklog) {
+                alert('Work Log not found');
+                return;
+            }
+            
+            // Open save modal in edit mode
+            document.getElementById('worklogTitle').value = worklog.title;
+            document.getElementById('worklogContent').value = worklog.content;
+            document.getElementById('worklogProject').value = worklog.projectId;
+            
+            // Update checkpoint dropdown for this project
+            updateWorkLogCheckpointDropdown();
+            
+            // Set checkpoint if linked
+            if (worklog.checkpointId) {
+                document.getElementById('worklogCheckpoint').value = worklog.checkpointId;
+            }
+            
+            // Store the worklog ID for updating
+            window.editingWorkLogId = worklogId;
+            
+            // Change modal title and button text
+            document.querySelector('#saveWorkLogModal h2').textContent = 'Edit Work Log';
+            document.querySelector('#saveWorkLogModal button[onclick="saveWorkLog()"]').textContent = 'Update Work Log';
+            
+            // Show modal
+            document.getElementById('saveWorkLogModal').classList.remove('hidden');
+        }
+
+        function editCurrentWorkLog() {
+            if (!currentViewingWorkLog) return;
+            
+            closeViewWorkLogModal();
+            editWorkLog(currentViewingWorkLog.id);
+        }
+
+        function deleteWorkLog(worklogId) {
+            if (!confirm('Are you sure you want to delete this work log?')) return;
+
+            const index = currentData.worklogs.findIndex(wl => wl.id === worklogId);
+            if (index === -1) return;
+
+            currentData.worklogs.splice(index, 1);
+            saveData();
+            renderWorkLogs();
+            showNotification('Work Log deleted', 'info');
+        }
+
+        function deleteCurrentWorkLog() {
+            if (!currentViewingWorkLog) return;
+            
+            closeViewWorkLogModal();
+            deleteWorkLog(currentViewingWorkLog.id);
+        }
+
+        // ===================================
         // PROJECT MANAGEMENT
         // ===================================
 
-        function createProject() {
-            const name = document.getElementById('newProjectName').value.trim();
+        function createProject(nameOverride) {
+            const rawName = typeof nameOverride === 'string'
+                ? nameOverride
+                : document.getElementById('newProjectName')?.value;
+
+            const name = rawName ? rawName.trim() : '';
+
             if (!name) {
                 alert('Please enter a project name');
                 return;
@@ -894,38 +2179,189 @@ Parent project: ${projectName}`;
 
             const project = {
                 id: generateId('proj'),
-                name: name,
-                created: new Date().toISOString(),
-                checkpoints: []
+                name,
+                checkpoints: [],
+                lastActivity: new Date().toISOString()
             };
 
             currentData.projects.push(project);
             saveData();
-            closeNewProjectModal();
             updateProjectDropdowns();
             renderCheckpoints();
+                    renderWorkLogs();
+                    renderArtifacts();
+
+            renderWorkLogs();
+            renderArtifacts();
+
+            if (!nameOverride) {
+                // Only close this if we came from the old "New Project" modal
+                closeNewProjectModal();
+            }
+
             showNotification('Project created successfully!', 'success');
         }
+
+        
+function showProjectManagerModal() {
+    const modal = document.getElementById('projectManagerModal');
+    const list = document.getElementById('projectManagerList');
+
+    if (!modal || !list) return;
+
+    if (!currentData.projects || currentData.projects.length === 0) {
+        list.innerHTML = `<p class="text-gray-500 text-sm">No projects yet. Create your first project below.</p>`;
+    } else {
+        // All Projects selector
+        const allActive = !currentProjectId;
+        let html = `
+            <div class="flex items-center justify-between border border-gray-200 rounded-lg px-3 py-2 mb-2 ${allActive ? 'bg-indigo-50 border-indigo-200' : ''}">
+                <div>
+                    <div class="font-medium text-gray-900">All Projects</div>
+                    <div class="text-xs text-gray-500">Use across all projects</div>
+                </div>
+                <button onclick="setCurrentProject(null); closeProjectManagerModal();"
+                        class="px-3 py-1 text-sm ${allActive ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700'} rounded-lg hover:bg-indigo-700 hover:text-white transition">
+                    ${allActive ? 'Selected' : 'Select'}
+                </button>
+            </div>
+        `;
+
+        currentData.projects.forEach(project => {
+            const checkpointCount = (project.checkpoints || []).length;
+            const worklogCount = currentData.worklogs.filter(w => w.projectId === project.id).length;
+            const lastActivity = project.lastActivity ? formatDate(project.lastActivity) : 'N/A';
+            const isActive = currentProjectId === project.id;
+
+            html += `
+                <div class="flex items-center justify-between border border-gray-200 rounded-lg px-3 py-2 ${isActive ? 'bg-indigo-50 border-indigo-200' : ''}">
+                    <div>
+                        <div class="font-medium text-gray-900">${escapeHtml(project.name)}</div>
+                        <div class="text-xs text-gray-500">
+                            ${checkpointCount} checkpoints â€¢ ${worklogCount} work logs â€¢ Last activity: ${lastActivity}
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="setCurrentProject('${project.id}'); closeProjectManagerModal();"
+                                class="px-3 py-1 text-sm ${isActive ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700'} rounded-lg hover:bg-indigo-700 hover:text-white transition">
+                            ${isActive ? 'Selected' : 'Select'}
+                        </button>
+                        <button onclick="deleteProject('${project.id}')"
+                                class="px-3 py-1 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
+                            Delete
+                        </button>
+                    </div>
+                </div>`;
+        });
+
+        list.innerHTML = html;
+    }
+
+    document.getElementById('projectManagerNewProjectName').value = '';
+    modal.classList.remove('hidden');
+}function closeProjectManagerModal() {
+            const modal = document.getElementById('projectManagerModal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function createProjectFromManager() {
+            const input = document.getElementById('projectManagerNewProjectName');
+            if (!input) return;
+
+            const name = input.value.trim();
+            if (!name) {
+                alert('Please enter a project name');
+                return;
+            }
+
+            createProject(name);
+            input.value = '';
+            showProjectManagerModal(); // refresh list
+        }
+
+        function deleteProject(projectId) {
+            if (!confirm('Delete this project and all its checkpoints, work logs, and artifacts? This cannot be undone.')) {
+                return;
+            }
+
+            // Remove project
+            currentData.projects = currentData.projects.filter(p => p.id !== projectId);
+
+            // Remove related work logs and artifacts
+            if (currentData.worklogs) {
+                currentData.worklogs = currentData.worklogs.filter(wl => wl.projectId !== projectId);
+            }
+            if (currentData.artifacts) {
+                currentData.artifacts = currentData.artifacts.filter(a => a.projectId !== projectId);
+            }
+
+            saveData();
+            updateProjectDropdowns();
+            renderCheckpoints();
+            renderWorkLogs();
+            renderArtifacts();
+            showNotification('Project and related data deleted.', 'info');
+
+            showProjectManagerModal(); // refresh list if modal still open
+        }
+
+
 
         function getProject(projectId) {
             return currentData.projects.find(p => p.id === projectId);
         }
 
+        function getCheckpointLabel(checkpoint) {
+            // Return label if it exists and is not empty
+            if (checkpoint.label && checkpoint.label.trim()) {
+                return checkpoint.label.trim();
+            }
+            
+            // Otherwise, extract first line from content (up to 50 chars)
+            if (checkpoint.content) {
+                const firstLine = checkpoint.content.trim().split('\n')[0];
+                if (firstLine.length > 50) {
+                    return firstLine.substring(0, 50) + '...';
+                }
+                return firstLine || 'Untitled Checkpoint';
+            }
+            
+            return 'Untitled Checkpoint';
+        }
+
         function updateProjectDropdowns() {
             const projectFilter = document.getElementById('projectFilter');
             const checkpointProject = document.getElementById('checkpointProject');
+            const worklogProjectFilter = document.getElementById('worklogProjectFilter');
+            const worklogProject = document.getElementById('worklogProject');
 
-            // Update filter dropdown
+            // Update checkpoint filter dropdown
             projectFilter.innerHTML = '<option value="">All Projects</option>';
             currentData.projects.forEach(project => {
-                projectFilter.innerHTML += `<option value="${project.id}">${project.name}</option>`;
+                projectFilter.innerHTML += `<option value="${escapeHtml(project.id)}">${escapeHtml(project.name)}</option>`;
             });
 
             // Update checkpoint save dropdown
             checkpointProject.innerHTML = '<option value="">Select Project...</option>';
             currentData.projects.forEach(project => {
-                checkpointProject.innerHTML += `<option value="${project.id}">${project.name}</option>`;
+                checkpointProject.innerHTML += `<option value="${escapeHtml(project.id)}">${escapeHtml(project.name)}</option>`;
             });
+            
+            // Update work log filter dropdown
+            if (worklogProjectFilter) {
+                worklogProjectFilter.innerHTML = '<option value="">All Projects</option>';
+                currentData.projects.forEach(project => {
+                    worklogProjectFilter.innerHTML += `<option value="${escapeHtml(project.id)}">${escapeHtml(project.name)}</option>`;
+                });
+            }
+            
+            // Update work log save dropdown
+            if (worklogProject) {
+                worklogProject.innerHTML = '<option value="">Select Project...</option>';
+                currentData.projects.forEach(project => {
+                    worklogProject.innerHTML += `<option value="${escapeHtml(project.id)}">${escapeHtml(project.name)}</option>`;
+                });
+            }
             
             // Update artifacts filter
             updateArtifactDropdowns();
@@ -960,6 +2396,33 @@ Parent project: ${projectName}`;
             // Validate checkpoint
             const validation = validateCheckpointContent(content);
 
+            // Check if we're editing an existing checkpoint
+            if (window.editingCheckpoint) {
+                const checkpoint = project.checkpoints.find(cp => cp.id === window.editingCheckpoint.checkpointId);
+                if (checkpoint) {
+                    checkpoint.content = content;
+                    checkpoint.label = label;
+                    checkpoint.timestamp = new Date().toISOString();
+                    checkpoint.validation = validation;
+                    checkpoint.lastUsed = new Date().toISOString();
+                    
+                    saveData();
+                    closeSaveCheckpointModal();
+                    renderCheckpoints();
+                    
+                    if (validation.isComplete) {
+                        showNotification('Checkpoint updated successfully! âœ“', 'success');
+                    } else {
+                        showNotification('Checkpoint updated (incomplete - missing sections)', 'warning');
+                    }
+                    
+                    // Clear editing flag
+                    window.editingCheckpoint = null;
+                    return;
+                }
+            }
+
+            // Create new checkpoint
             const checkpoint = {
                 id: generateId('cp'),
                 content: content,
@@ -996,7 +2459,7 @@ Parent project: ${projectName}`;
             renderCheckpoints();
             
             if (validation.isComplete) {
-                showNotification('Checkpoint saved successfully! ✓', 'success');
+                showNotification('Checkpoint saved successfully! âœ“', 'success');
             } else {
                 showNotification('Checkpoint saved (incomplete - missing sections)', 'warning');
             }
@@ -1160,8 +2623,8 @@ Parent project: ${projectName}`;
             let html = `
                 <div class="flex items-center gap-2 mb-2">
                     ${validation.isComplete 
-                        ? '<span class="text-green-600">✓ Complete</span>' 
-                        : '<span class="text-yellow-600">⚠ Incomplete</span>'}
+                        ? '<span class="text-green-600">âœ“ Complete</span>' 
+                        : '<span class="text-yellow-600">âš  Incomplete</span>'}
                     <span class="text-gray-600">(${validation.foundCount}/${validation.totalCount} sections found)</span>
                 </div>
             `;
@@ -1169,7 +2632,7 @@ Parent project: ${projectName}`;
             if (!validation.isComplete) {
                 html += '<div class="text-sm text-gray-600 mt-2">Missing sections:</div>';
                 validation.missingSections.forEach(section => {
-                    html += `<div class="text-sm text-red-600">✗ ${section}</div>`;
+                    html += `<div class="text-sm text-red-600">âœ— ${section}</div>`;
                 });
             } else {
                 html += '<div class="text-sm text-green-600">All required sections present!</div>';
@@ -1178,15 +2641,60 @@ Parent project: ${projectName}`;
             detailsDiv.innerHTML = html;
         }
 
+        function editCheckpoint(projectId, checkpointId) {
+            const project = getProject(projectId);
+            if (!project) {
+                alert('Project not found');
+                return;
+            }
+            
+            const checkpoint = project.checkpoints.find(cp => cp.id === checkpointId);
+            if (!checkpoint) {
+                alert('Checkpoint not found');
+                return;
+            }
+            
+            // Open save modal in edit mode
+            document.getElementById('checkpointLabel').value = checkpoint.label || '';
+            document.getElementById('checkpointContent').value = checkpoint.content;
+            document.getElementById('checkpointProject').value = projectId;
+            
+            // Store the checkpoint info for updating
+            window.editingCheckpoint = { projectId, checkpointId };
+            
+            // Change modal title and button text
+            document.querySelector('#saveCheckpointModal h2').textContent = 'Edit Checkpoint';
+            document.querySelector('#saveCheckpointModal button[onclick="saveCheckpoint()"]').textContent = 'Update Checkpoint';
+            
+            // Show modal
+            document.getElementById('saveCheckpointModal').classList.remove('hidden');
+        }
+
+        function editCurrentCheckpoint() {
+            if (!currentViewingCheckpoint) return;
+            
+            closeViewCheckpointModal();
+            editCheckpoint(currentViewingCheckpoint.projectId, currentViewingCheckpoint.checkpointId);
+        }
+
         function deleteCheckpoint(projectId, checkpointId) {
-            if (!confirm('Are you sure you want to delete this checkpoint?')) {
+            if (!confirm('Delete this checkpoint? Any linked work logs will remain, but their checkpoint link will be cleared.')) {
                 return;
             }
 
-            const project = getProject(projectId);
+const project = getProject(projectId);
             if (!project) return;
 
             project.checkpoints = project.checkpoints.filter(cp => cp.id !== checkpointId);
+
+            // Clear links from work logs that referenced this checkpoint
+            currentData.worklogs = currentData.worklogs.map(wl => {
+                if (wl.checkpointId === checkpointId) {
+                    return { ...wl, checkpointId: null };
+                }
+                return wl;
+            });
+
             saveData();
             closeViewCheckpointModal();
             renderCheckpoints();
@@ -1274,7 +2782,7 @@ Parent project: ${projectName}`;
                 if (line.toLowerCase().match(/^files?\s+(we\s+)?used/i)) return;
                 
                 // Remove common bullet formats
-                const cleanLine = line.replace(/^[-•*✓\d]+[.)\s]+/, '').trim();
+                const cleanLine = line.replace(/^[-â€¢*âœ“\d]+[.)\s]+/, '').trim();
                 if (!cleanLine) return;
                 
                 // Try to find actual filename with extension
@@ -1317,7 +2825,7 @@ Parent project: ${projectName}`;
                 if (!line) continue;
                 
                 // Allow headers like "FILES WE USED", "Files used", "Artifacts", with optional punctuation
-                if (headerRegex.test(line.replace(/[:\-–—]+$/, ''))) {
+                if (headerRegex.test(line.replace(/[:\-â€“â€”]+$/, ''))) {
                     startIndex = i + 1;
                     break;
                 }
@@ -1338,7 +2846,7 @@ Parent project: ${projectName}`;
                 }
                 
                 // Detect obvious new top-level headings (all caps words, often the other checkpoint sections)
-                if (/^[A-Z][A-Z0-9\s\-–—]+$/.test(trimmed) && !/^[\-•*]/.test(trimmed)) {
+                if (/^[A-Z][A-Z0-9\s\-â€“â€”]+$/.test(trimmed) && !/^[\-â€¢*]/.test(trimmed)) {
                     break;
                 }
                 
@@ -1457,6 +2965,7 @@ Parent project: ${projectName}`;
         function renderArtifacts() {
             const container = document.getElementById('artifactsList');
             const emptyState = document.getElementById('artifactsEmptyState');
+            updateProjectContextIndicator();
             
             if (currentData.artifacts.length === 0) {
                 container.innerHTML = '';
@@ -1470,6 +2979,7 @@ Parent project: ${projectName}`;
             const searchTerm = document.getElementById('artifactSearchInput').value.toLowerCase();
             const projectFilter = document.getElementById('artifactProjectFilter').value;
             const typeFilter = document.getElementById('artifactTypeFilter').value;
+            const checkpointFilter = window.activeArtifactCheckpointFilter || null;
 
             let filtered = currentData.artifacts.filter(art => {
                 const matchesSearch = !searchTerm || 
@@ -1479,8 +2989,9 @@ Parent project: ${projectName}`;
                 
                 const matchesProject = !projectFilter || art.projectId === projectFilter;
                 const matchesType = !typeFilter || art.type === typeFilter;
+                const matchesCheckpoint = !checkpointFilter || (art.linkedCheckpoints || []).includes(checkpointFilter);
 
-                return matchesSearch && matchesProject && matchesType;
+                return matchesSearch && matchesProject && matchesType && matchesCheckpoint;
             });
 
             // Sort by most recent
@@ -1492,14 +3003,14 @@ Parent project: ${projectName}`;
                 const projectName = project ? project.name : 'Unknown Project';
                 
                 const typeIcons = {
-                    'document': '📄',
-                    'image': '🖼️',
-                    'data': '📊',
-                    'code': '💻',
-                    'other': '📎'
+                    'document': 'ðŸ“„',
+                    'image': 'ðŸ–¼ï¸',
+                    'data': 'ðŸ“Š',
+                    'code': 'ðŸ’»',
+                    'other': 'ðŸ“Ž'
                 };
                 
-                const icon = typeIcons[art.type] || '📎';
+                const icon = typeIcons[art.type] || 'ðŸ“Ž';
 
                 return `
                     <div class="checkpoint-card bg-white rounded-lg shadow-md p-6">
@@ -1519,19 +3030,19 @@ Parent project: ${projectName}`;
                                     </p>
                                 ` : ''}
                                 <p class="text-xs text-gray-500">
-                                    ${projectName} • v${art.version} • ${formatDate(art.created)}
+                                    ${escapeHtml(projectName)} â€¢ v${art.version} â€¢ ${formatDate(art.created)}
                                 </p>
                             </div>
                             <div class="flex gap-2">
                                 <button onclick="editArtifact('${art.id}')" 
                                         class="text-blue-600 hover:text-blue-800 text-sm"
                                         title="Edit artifact">
-                                    ✏️
+                                    âœï¸
                                 </button>
                                 <button onclick="deleteArtifact('${art.id}')" 
                                         class="text-red-600 hover:text-red-800 text-sm"
                                         title="Delete artifact">
-                                    🗑️
+                                    ðŸ—‘ï¸
                                 </button>
                             </div>
                         </div>
@@ -1539,7 +3050,7 @@ Parent project: ${projectName}`;
                         ${art.linkedCheckpoints.length > 0 ? `
                             <div class="mt-3 pt-3 border-t border-gray-200">
                                 <p class="text-xs text-gray-600">
-                                    🔗 Linked to ${art.linkedCheckpoints.length} checkpoint(s)
+                                    ðŸ”— Linked to ${art.linkedCheckpoints.length} checkpoint(s)
                                 </p>
                             </div>
                         ` : ''}
@@ -1547,7 +3058,7 @@ Parent project: ${projectName}`;
                         ${art.externalPath ? `
                             <div class="mt-2">
                                 <p class="text-xs text-gray-500">
-                                    📁 ${escapeHtml(art.externalPath)}
+                                    ðŸ“ ${escapeHtml(art.externalPath)}
                                 </p>
                             </div>
                         ` : ''}
@@ -1557,6 +3068,13 @@ Parent project: ${projectName}`;
         }
 
         function filterArtifacts() {
+            // Clear active checkpoint filter when user manually filters
+            window.activeArtifactCheckpointFilter = null;
+
+            // Hide filter indicator
+            const indicator = document.getElementById('activeArtifactCheckpointFilterIndicator');
+            if (indicator) indicator.classList.add('hidden');
+
             renderArtifacts();
         }
 
@@ -1585,7 +3103,7 @@ Parent project: ${projectName}`;
             // Update project dropdown
             projectSelect.innerHTML = '<option value="">Select Project...</option>';
             currentData.projects.forEach(project => {
-                projectSelect.innerHTML += `<option value="${project.id}">${project.name}</option>`;
+                projectSelect.innerHTML += `<option value="${escapeHtml(project.id)}">${escapeHtml(project.name)}</option>`;
             });
 
             // Update checkpoint dropdown
@@ -1594,7 +3112,7 @@ Parent project: ${projectName}`;
                 if (project.checkpoints && project.checkpoints.length > 0) {
                     project.checkpoints.forEach(cp => {
                         const label = cp.label || 'Checkpoint';
-                        checkpointSelect.innerHTML += `<option value="${cp.id}">${project.name}: ${label}</option>`;
+                        checkpointSelect.innerHTML += `<option value="${escapeHtml(cp.id)}">${escapeHtml(project.name)}: ${escapeHtml(label)}</option>`;
                     });
                 }
             });
@@ -1606,7 +3124,8 @@ Parent project: ${projectName}`;
             document.getElementById('artifactType').value = 'document';
             document.getElementById('artifactPath').value = '';
             
-            modal.classList.remove('hidden');
+                        applyCurrentProjectToSelect('artifactProject');
+modal.classList.remove('hidden');
             
             // Reset scroll
             const modalContent = modal.querySelector('.overflow-y-auto');
@@ -1622,7 +3141,7 @@ Parent project: ${projectName}`;
             
             projectFilter.innerHTML = '<option value="">All Projects</option>';
             currentData.projects.forEach(project => {
-                projectFilter.innerHTML += `<option value="${project.id}">${project.name}</option>`;
+                projectFilter.innerHTML += `<option value="${escapeHtml(project.id)}">${escapeHtml(project.name)}</option>`;
             });
         }
 
@@ -1633,11 +3152,14 @@ Parent project: ${projectName}`;
         function switchTab(tabName) {
             // Hide all tabs
             document.getElementById('checkpointsTab').classList.add('hidden');
+            document.getElementById('worklogsTab').classList.add('hidden');
             document.getElementById('artifactsTab').classList.add('hidden');
             
             // Remove active state from all tab buttons
             document.getElementById('tabCheckpoints').classList.remove('border-white');
             document.getElementById('tabCheckpoints').classList.add('border-transparent');
+            document.getElementById('tabWorklogs').classList.remove('border-white');
+            document.getElementById('tabWorklogs').classList.add('border-transparent');
             document.getElementById('tabArtifacts').classList.remove('border-white');
             document.getElementById('tabArtifacts').classList.add('border-transparent');
             
@@ -1646,6 +3168,11 @@ Parent project: ${projectName}`;
                 document.getElementById('checkpointsTab').classList.remove('hidden');
                 document.getElementById('tabCheckpoints').classList.add('border-white');
                 document.getElementById('tabCheckpoints').classList.remove('border-transparent');
+            } else if (tabName === 'worklogs') {
+                document.getElementById('worklogsTab').classList.remove('hidden');
+                document.getElementById('tabWorklogs').classList.add('border-white');
+                document.getElementById('tabWorklogs').classList.remove('border-transparent');
+                renderWorkLogs();
             } else if (tabName === 'artifacts') {
                 document.getElementById('artifactsTab').classList.remove('hidden');
                 document.getElementById('tabArtifacts').classList.add('border-white');
@@ -1709,34 +3236,61 @@ Parent project: ${projectName}`;
             }
 
             // Render
-            container.innerHTML = filtered.map(cp => `
+            container.innerHTML = filtered.map(cp => {
+                // Count work logs linked to this checkpoint
+                const workLogCount = currentData.worklogs.filter(wl => wl.checkpointId === cp.id).length;
+                
+                return `
                 <div class="checkpoint-card bg-white rounded-lg shadow-md p-6">
                     <div class="flex justify-between items-start mb-3" onclick="viewCheckpoint('${cp.projectId}', '${cp.id}')" style="cursor: pointer;">
                         <div>
                             <h3 class="text-lg font-semibold text-gray-800">
-                                ${cp.label || 'Checkpoint'}
+                                ${escapeHtml(getCheckpointLabel(cp))}
                             </h3>
                             <p class="text-sm text-gray-500">
-                                ${cp.projectName} • ${formatDate(cp.timestamp)}
+                                ${escapeHtml(cp.projectName)} â€¢ ${formatDate(cp.timestamp)}
                             </p>
                         </div>
                         <div class="flex items-center gap-2">
-                            ${cp.validation.isComplete 
-                                ? '<span class="text-green-600 text-sm">✓ Complete</span>' 
-                                : '<span class="text-yellow-600 text-sm">⚠ Incomplete</span>'}
+                            ${workLogCount > 0 ? `
+                                <button onclick="event.stopPropagation(); filterWorkLogsByCheckpoint('${cp.id}')" 
+                                        class="text-xs bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600 transition"
+                                        title="View ${workLogCount} linked work log${workLogCount > 1 ? 's' : ''}">
+                                    ðŸ“ ${workLogCount} log${workLogCount > 1 ? 's' : ''}
+                                </button>
+                            ` : ''}
+                            
+                            ${(() => {
+                                const artifactCount = currentData.artifacts.filter(a => (a.linkedCheckpoints || []).includes(cp.id)).length;
+                                return artifactCount > 0 ? `
+                                    <button onclick="event.stopPropagation(); filterArtifactsByCheckpoint('${cp.id}')"
+                                            class="text-xs bg-purple-500 text-white px-2 py-1 rounded hover:bg-purple-600 transition"
+                                            title="View ${artifactCount} linked artifact${artifactCount > 1 ? 's' : ''}">
+                                        ðŸ“Ž ${artifactCount} art${artifactCount > 1 ? 's' : ''}
+                                    </button>
+                                ` : '';
+                            })()}
+${cp.validation.isComplete 
+                                ? '<span class="text-green-600 text-sm">âœ“ Complete</span>' 
+                                : '<span class="text-yellow-600 text-sm">âš  Incomplete</span>'}
                         </div>
                     </div>
                     <div class="text-sm text-gray-600 line-clamp-3 mb-3" onclick="viewCheckpoint('${cp.projectId}', '${cp.id}')" style="cursor: pointer;">
                         ${escapeHtml(cp.content.substring(0, 200))}...
                     </div>
-                    <div class="flex justify-end pt-2 border-t border-gray-100">
-                        <button onclick="event.stopPropagation(); generateRestorationPrompt('${cp.projectId}', '${cp.id}')" 
+                    <div class="flex justify-between pt-2 border-t border-gray-100">
+                        <button onclick="event.stopPropagation(); editCheckpoint('${cp.projectId}', '${cp.id}')" 
+                                class="text-sm px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
+                            âœï¸ Edit
+                        </button>
+                        <button onclick="event.stopPropagation(); copyRestorationPrompt('${cp.projectId}', '${cp.id}')" 
                                 class="btn-restore-card">
-                            🔄 Generate Restoration Prompt
+                            ðŸ”„ Restore prompt
                         </button>
                     </div>
                 </div>
-            `).join('');
+            `;
+            }).join('');
         }
 
         function viewCheckpoint(projectId, checkpointId) {
@@ -1749,10 +3303,10 @@ Parent project: ${projectName}`;
             currentViewingCheckpoint = { projectId, checkpointId };
 
             document.getElementById('viewCheckpointTitle').textContent = 
-                checkpoint.label || 'Checkpoint';
+                getCheckpointLabel(checkpoint);
             
             document.getElementById('viewCheckpointMeta').textContent = 
-                `${project.name} • ${formatDate(checkpoint.timestamp)}`;
+                `${project.name} â€¢ ${formatDate(checkpoint.timestamp)}`;
 
             document.getElementById('viewCheckpointContent').textContent = checkpoint.content;
 
@@ -1770,7 +3324,9 @@ Parent project: ${projectName}`;
 
         function filterCheckpoints() {
             renderCheckpoints();
-        }
+        
+            updateProjectContextIndicator();
+}
 
         // ===================================
         // CLIPBOARD & EXPORT/IMPORT
@@ -1780,7 +3336,7 @@ Parent project: ${projectName}`;
             const content = document.getElementById('viewCheckpointContent').textContent;
             
             navigator.clipboard.writeText(content).then(() => {
-                showNotification('Copied to clipboard! ✓', 'success');
+                showNotification('Copied to clipboard! âœ“', 'success');
             }).catch(err => {
                 // Fallback for older browsers
                 const textarea = document.createElement('textarea');
@@ -1789,21 +3345,259 @@ Parent project: ${projectName}`;
                 textarea.select();
                 document.execCommand('copy');
                 document.body.removeChild(textarea);
-                showNotification('Copied to clipboard! ✓', 'success');
+                showNotification('Copied to clipboard! âœ“', 'success');
             });
         }
 
-        function exportData() {
-            const dataStr = JSON.stringify(currentData, null, 2);
+        // ===================================
+        // EXPORT MODAL
+        // ===================================
+
+        function showExportModal() {
+            const modal = document.getElementById('exportModal');
+            
+            // Update project checkboxes
+            const projectCheckboxes = document.getElementById('projectCheckboxes');
+            projectCheckboxes.innerHTML = currentData.projects.map(project => {
+                const cpCount = project.checkpoints ? project.checkpoints.length : 0;
+                const wlCount = currentData.worklogs.filter(wl => wl.projectId === project.id).length;
+                const artCount = currentData.artifacts.filter(art => art.projectId === project.id).length;
+                
+                return `
+                    <label class="flex items-center p-2 hover:bg-gray-50 rounded cursor-pointer">
+                        <input type="checkbox" 
+                               class="export-project-checkbox mr-2" 
+                               value="${project.id}"
+                               onchange="updateExportPreview()">
+                        <div class="text-sm">
+                            <div class="font-medium text-gray-900">${escapeHtml(project.name)}</div>
+                            <div class="text-gray-600">${cpCount} checkpoints, ${wlCount} logs, ${artCount} artifacts</div>
+                        </div>
+                    </label>
+                `;
+            }).join('');
+            
+            modal.classList.remove('hidden');
+            updateExportPreview();
+        }
+
+        function closeExportModal() {
+            document.getElementById('exportModal').classList.add('hidden');
+        }
+
+        function updateExportPreview() {
+            const exportOption = document.querySelector('input[name="exportOption"]:checked').value;
+            const projectCheckboxesContainer = document.getElementById('projectCheckboxes');
+            const preview = document.getElementById('exportPreview');
+            
+            // Show/hide project checkboxes
+            if (exportOption === 'selective') {
+                projectCheckboxesContainer.classList.remove('hidden');
+            } else {
+                projectCheckboxesContainer.classList.add('hidden');
+            }
+            
+            // Update preview
+            if (exportOption === 'all') {
+                const totalCheckpoints = currentData.projects.reduce((sum, p) => sum + (p.checkpoints ? p.checkpoints.length : 0), 0);
+                preview.innerHTML = `
+                    â€¢ ${currentData.projects.length} project${currentData.projects.length !== 1 ? 's' : ''}<br>
+                    â€¢ ${totalCheckpoints} checkpoint${totalCheckpoints !== 1 ? 's' : ''}<br>
+                    â€¢ ${currentData.worklogs.length} work log${currentData.worklogs.length !== 1 ? 's' : ''}<br>
+                    â€¢ ${currentData.artifacts.length} artifact${currentData.artifacts.length !== 1 ? 's' : ''}
+                `;
+            } else {
+                const selectedCheckboxes = document.querySelectorAll('.export-project-checkbox:checked');
+                const selectedIds = Array.from(selectedCheckboxes).map(cb => cb.value);
+                
+                if (selectedIds.length === 0) {
+                    preview.innerHTML = '<span class="text-gray-500">No projects selected</span>';
+                } else {
+                    const selectedProjects = currentData.projects.filter(p => selectedIds.includes(p.id));
+                    const totalCheckpoints = selectedProjects.reduce((sum, p) => sum + (p.checkpoints ? p.checkpoints.length : 0), 0);
+                    const totalWorklogs = currentData.worklogs.filter(wl => selectedIds.includes(wl.projectId)).length;
+                    const totalArtifacts = currentData.artifacts.filter(art => selectedIds.includes(art.projectId)).length;
+                    
+                    preview.innerHTML = `
+                        â€¢ ${selectedProjects.length} project${selectedProjects.length !== 1 ? 's' : ''}<br>
+                        â€¢ ${totalCheckpoints} checkpoint${totalCheckpoints !== 1 ? 's' : ''}<br>
+                        â€¢ ${totalWorklogs} work log${totalWorklogs !== 1 ? 's' : ''}<br>
+                        â€¢ ${totalArtifacts} artifact${totalArtifacts !== 1 ? 's' : ''}
+                    `;
+                }
+            }
+        }
+
+        function performExport() {
+            const exportOption = document.querySelector('input[name="exportOption"]:checked').value;
+            let exportData;
+            let filename;
+            
+            if (exportOption === 'all') {
+                exportData = currentData;
+                filename = `Vizier_Export_All_${new Date().toISOString().split('T')[0]}.json`;
+            } else {
+                const selectedCheckboxes = document.querySelectorAll('.export-project-checkbox:checked');
+                const selectedIds = Array.from(selectedCheckboxes).map(cb => cb.value);
+                
+                if (selectedIds.length === 0) {
+                    alert('Please select at least one project to export');
+                    return;
+                }
+                
+                // Create filtered export
+                exportData = {
+                    version: currentData.version,
+                    projects: currentData.projects.filter(p => selectedIds.includes(p.id)),
+                    worklogs: currentData.worklogs.filter(wl => selectedIds.includes(wl.projectId)),
+                    artifacts: currentData.artifacts.filter(art => selectedIds.includes(art.projectId))
+                };
+                
+                const projectNames = exportData.projects.map(p => p.name.replace(/\s+/g, '')).join('_');
+                filename = `Vizier_Export_${projectNames}_${new Date().toISOString().split('T')[0]}.json`;
+            }
+            
+            // Perform export
+            const dataStr = JSON.stringify(exportData, null, 2);
             const blob = new Blob([dataStr], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `vizier-toolkit-backup-${Date.now()}.json`;
+            a.download = filename;
             a.click();
             URL.revokeObjectURL(url);
+            
+            closeExportModal();
             showNotification('Data exported successfully!', 'success');
         }
+
+        // ===================================
+        // CLEAR ALL DATA MODAL
+        // ===================================
+
+        function showClearAllDataModal() {
+            const modal = document.getElementById('clearAllDataModal');
+            
+            // Update counts
+            const totalCheckpoints = currentData.projects.reduce((sum, p) => sum + (p.checkpoints ? p.checkpoints.length : 0), 0);
+            document.getElementById('clearDataProjectCount').textContent = `â€¢ ${currentData.projects.length} project${currentData.projects.length !== 1 ? 's' : ''}`;
+            document.getElementById('clearDataCheckpointCount').textContent = `â€¢ ${totalCheckpoints} checkpoint${totalCheckpoints !== 1 ? 's' : ''}`;
+            document.getElementById('clearDataWorklogCount').textContent = `â€¢ ${currentData.worklogs.length} work log${currentData.worklogs.length !== 1 ? 's' : ''}`;
+            document.getElementById('clearDataArtifactCount').textContent = `â€¢ ${currentData.artifacts.length} artifact${currentData.artifacts.length !== 1 ? 's' : ''}`;
+            
+            // Reset confirmation input
+            document.getElementById('clearDataConfirmation').value = '';
+            document.getElementById('clearAllDataButton').disabled = true;
+            
+            modal.classList.remove('hidden');
+        }
+
+        function closeClearAllDataModal() {
+            document.getElementById('clearAllDataModal').classList.add('hidden');
+        }
+
+        // Enable button when "DELETE" is typed
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            updateProjectContextIndicator();
+const confirmInput = document.getElementById('clearDataConfirmation');
+            if (confirmInput) {
+                confirmInput.addEventListener('input', function() {
+                    const button = document.getElementById('clearAllDataButton');
+                    button.disabled = this.value !== 'DELETE';
+                });
+            }
+        });
+
+        
+        // Modal consistency helpers: close buttons + ESC-to-close
+        function closeModalById(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function getOpenModals() {
+            return Array.from(document.querySelectorAll('div[id$="Modal"].fixed'))
+                .filter(m => !m.classList.contains('hidden'));
+        }
+
+        function closeTopmostModal() {
+            const open = getOpenModals();
+            if (open.length === 0) return false;
+            closeModalById(open[open.length - 1].id);
+            return true;
+        }
+
+        function ensureModalCloseButtons() {
+            const modals = document.querySelectorAll('div[id$="Modal"].fixed');
+            modals.forEach(modal => {
+                const box = modal.querySelector('.bg-white');
+                if (!box) return;
+
+                // Make the modal box a positioning context for an absolute close button
+                box.classList.add('relative');
+
+                // Avoid duplicating if an X already exists
+                if (box.querySelector('[data-modal-x-close="1"]')) return;
+
+                // If the modal already includes an X button, do not add another
+                const hasXButton = Array.from(box.querySelectorAll('button'))
+                    .some(b => ((b.textContent || '').trim() === 'âœ•'));
+                if (hasXButton) return;
+
+                const btn = document.createElement('button');
+                btn.setAttribute('data-modal-x-close', '1');
+                btn.setAttribute('type', 'button');
+                btn.setAttribute('aria-label', 'Close');
+                btn.className = 'absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-xl';
+                btn.textContent = 'âœ•';
+                btn.addEventListener('click', () => closeModalById(modal.id));
+                box.appendChild(btn);
+            });
+        }
+
+        // ESC closes the topmost visible modal (including Projects)
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const closed = closeTopmostModal();
+                if (closed) e.preventDefault();
+            }
+        });
+
+        // Add X-close buttons to any modals that do not already have one
+        document.addEventListener('DOMContentLoaded', function() {
+            ensureModalCloseButtons();
+        });
+
+function performClearAllData() {
+            const confirmation = document.getElementById('clearDataConfirmation').value;
+            
+            if (confirmation !== 'DELETE') {
+                alert('Please type DELETE to confirm');
+                return;
+            }
+            
+            // Clear all data
+            currentData = {
+                version: currentData.version,
+                projects: [],
+                artifacts: [],
+                worklogs: []
+            };
+            
+            saveData();
+            closeClearAllDataModal();
+            updateProjectDropdowns();
+            renderCheckpoints();
+            renderWorkLogs();
+            renderArtifacts();
+            
+            showNotification('All data cleared', 'info');
+        }
+
+        // ===================================
+        // IMPORT
+        // ===================================
 
         function importData() {
             const fileInput = document.getElementById('importFile');
@@ -1834,6 +3628,27 @@ Parent project: ${projectName}`;
                         }
                     });
 
+
+                    // Merge imported work logs (if present)
+                    if (imported.worklogs && Array.isArray(imported.worklogs)) {
+                        if (!currentData.worklogs) currentData.worklogs = [];
+                        imported.worklogs.forEach(wl => {
+                            if (wl && wl.id && !currentData.worklogs.find(e => e.id === wl.id)) {
+                                currentData.worklogs.push(wl);
+                            }
+                        });
+                    }
+
+                    // Merge imported artifacts (if present)
+                    if (imported.artifacts && Array.isArray(imported.artifacts)) {
+                        if (!currentData.artifacts) currentData.artifacts = [];
+                        imported.artifacts.forEach(art => {
+                            if (art && art.id && !currentData.artifacts.find(e => e.id === art.id)) {
+                                currentData.artifacts.push(art);
+                            }
+                        });
+                    }
+
                     // Rebuild / update Artifact Registry indexes based on all checkpoints
                     scanExistingCheckpointsForArtifacts();
 
@@ -1841,6 +3656,8 @@ Parent project: ${projectName}`;
                     closeImportModal();
                     updateProjectDropdowns();
                     renderCheckpoints();
+                    renderWorkLogs();
+                    renderArtifacts();
                     showNotification('Data imported successfully!', 'success');
                 } catch (err) {
                     alert('Error importing data: ' + err.message);
@@ -1856,6 +3673,8 @@ Parent project: ${projectName}`;
         function showSaveCheckpointModal() {
             const modal = document.getElementById('saveCheckpointModal');
             modal.classList.remove('hidden');
+updateProjectDropdowns(document.getElementById('checkpointProject'));
+            applyCurrentProjectToSelect('checkpointProject');
             
             // Reset scroll position
             const modalContent = modal.querySelector('.overflow-y-auto');
@@ -1864,10 +3683,22 @@ Parent project: ${projectName}`;
             document.getElementById('checkpointContent').value = '';
             document.getElementById('checkpointLabel').value = '';
             document.getElementById('validationResults').classList.add('hidden');
+            
+            // Reset to create mode
+            window.editingCheckpoint = null;
+            document.querySelector('#saveCheckpointModal h2').textContent = 'Save Checkpoint';
+            document.querySelector('#saveCheckpointModal button[onclick="saveCheckpoint()"]').textContent = 'Save Checkpoint';
         }
 
         function closeSaveCheckpointModal() {
             document.getElementById('saveCheckpointModal').classList.add('hidden');
+            
+            // Clear editing flag
+            window.editingCheckpoint = null;
+            
+            // Reset modal title and button text
+            document.querySelector('#saveCheckpointModal h2').textContent = 'Save Checkpoint';
+            document.querySelector('#saveCheckpointModal button[onclick="saveCheckpoint()"]').textContent = 'Save Checkpoint';
         }
 
         function showNewProjectModal() {
@@ -1970,8 +3801,11 @@ Parent project: ${projectName}`;
 
         document.addEventListener('DOMContentLoaded', function() {
             initData();
+            loadCurrentProjectId();
             scanExistingCheckpointsForArtifacts(); // Scan existing checkpoints
             updateProjectDropdowns();
+            updateProjectContextIndicator();
+            applyCurrentProjectToFilters();
             renderCheckpoints();
         });
 
@@ -1982,10 +3816,15 @@ Parent project: ${projectName}`;
                 closeSaveCheckpointModal();
                 closeNewProjectModal();
                 closeImportModal();
+                closeExportModal();
+                closeClearAllDataModal();
                 closeViewCheckpointModal();
                 closeAddArtifactModal();
                 closeAboutModal();
                 closeRestorationPromptModal();
+                closeWorkLogGeneratorModal();
+                closeSaveWorkLogModal();
+                closeViewWorkLogModal();
             }
         });
 
@@ -1994,11 +3833,18 @@ Parent project: ${projectName}`;
         // ===================================
         
         function showAboutModal() {
-            document.getElementById('aboutModal').classList.remove('hidden');
+            const modal = document.getElementById('aboutModal');
+            if (!modal) {
+                console.error('About modal not found: #aboutModal');
+                return;
+            }
+            modal.classList.remove('hidden');
         }
         
         function closeAboutModal() {
-            document.getElementById('aboutModal').classList.add('hidden');
+            const modal = document.getElementById('aboutModal');
+            if (!modal) return;
+            modal.classList.add('hidden');
         }
 
         // ===================================
@@ -2026,14 +3872,96 @@ ${checkpoint.content}
 ---`;
             
             // Show in modal
-            document.getElementById('restorationPromptTitle').textContent = checkpoint.label || 'Checkpoint';
-            document.getElementById('restorationPromptMeta').textContent = `${project.name} • ${formatDate(checkpoint.timestamp)}`;
+            document.getElementById('restorationPromptTitle').textContent = getCheckpointLabel(checkpoint);
+            document.getElementById('restorationPromptMeta').textContent = `${project.name} â€¢ ${formatDate(checkpoint.timestamp)}`;
             document.getElementById('restorationPromptText').textContent = restorationPrompt;
             document.getElementById('restorationPromptModal').classList.remove('hidden');
             
             // Store for copying
             window.currentRestorationPrompt = restorationPrompt;
         }
+
+        // Quick action: copy restoration prompt directly (used by checkpoint card Restore button)
+        function copyRestorationPrompt(projectId, checkpointId) {
+            const project = getProject(projectId);
+            if (!project) return;
+
+            const checkpoint = project.checkpoints.find(cp => cp.id === checkpointId);
+            if (!checkpoint) return;
+
+            const restorationPrompt = `Restore this project using the summary below, which is the latest checkpoint.
+Treat the checkpoint as the authoritative record for this project.
+Do not invent missing context or change prior decisions unless I explicitly say so.
+
+After reading it:
+1) Briefly restate the current project state and plan.
+2) List any files or artifacts you need me to re-upload.
+3) Wait for my confirmation before doing new work.
+
+---
+${checkpoint.content}
+---`;
+
+            navigator.clipboard.writeText(restorationPrompt).then(() => {
+                showNotification('Restore prompt copied to clipboard.', 'success');
+            }).catch(err => {
+                const textarea = document.createElement('textarea');
+                textarea.value = restorationPrompt;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                showNotification('Restore prompt copied to clipboard.', 'success');
+            });
+        }
+
+        // Quick action: download checkpoint as .txt from view modal
+        function downloadCurrentCheckpointTxt() {
+            if (!currentViewingCheckpoint) return;
+            downloadCheckpointTxt(currentViewingCheckpoint.projectId, currentViewingCheckpoint.checkpointId);
+        }
+
+        function sanitizeFilename(name) {
+            return (name || 'checkpoint')
+                .replace(/\s+/g, '_')
+                .replace(/[^a-zA-Z0-9_\-\.]/g, '')
+                .substring(0, 80) || 'checkpoint';
+        }
+
+        function downloadCheckpointTxt(projectId, checkpointId) {
+            const project = getProject(projectId);
+            if (!project) return;
+
+            const checkpoint = project.checkpoints.find(cp => cp.id === checkpointId);
+            if (!checkpoint) return;
+
+            const label = getCheckpointLabel(checkpoint);
+            const ts = checkpoint.timestamp ? new Date(checkpoint.timestamp) : new Date();
+            const tsStr = ts.toISOString().replace(/[:]/g, '-').replace(/\..*$/, '');
+            const filename = `${sanitizeFilename(project.name)}__${sanitizeFilename(label)}__${tsStr}.txt`;
+
+            const body = [
+                `CHECKPOINT: ${label}`,
+                `Project: ${project.name}`,
+                `Date: ${formatDate(checkpoint.timestamp)}`,
+                '',
+                checkpoint.content || ''
+            ].join('\n');
+
+            const blob = new Blob([body], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+
+            setTimeout(() => URL.revokeObjectURL(url), 0);
+            showNotification('Checkpoint downloaded.', 'success');
+        }
+
         
         function closeRestorationPromptModal() {
             document.getElementById('restorationPromptModal').classList.add('hidden');
@@ -2065,7 +3993,8 @@ ${checkpoint.content}
                 currentViewingCheckpoint.checkpointId
             );
         }
-    </script>
+
+</script>
 
 </body>
 </html>

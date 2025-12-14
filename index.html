@@ -75,15 +75,15 @@
 <button onclick="showProjectManagerModal()" class="bg-indigo-500 hover:bg-indigo-400 text-white px-4 py-2 rounded-lg transition font-medium">Projects</button>
                 <button onclick="showExportModal()" 
                         class="bg-indigo-500 hover:bg-indigo-400 text-white px-4 py-2 rounded-lg transition font-medium text-sm">
-                    ðŸ“¤ Export
+                    📤 Export
                 </button>
                 <button onclick="showImportModal()" 
                         class="bg-indigo-500 hover:bg-indigo-400 text-white px-4 py-2 rounded-lg transition font-medium text-sm">
-                    ðŸ“¥ Import
+                    📥 Import
                 </button>
                 <button onclick="showClearAllDataModal()" 
                         class="bg-red-500 hover:bg-red-400 text-white px-4 py-2 rounded-lg transition font-medium text-sm ml-auto">
-                    ðŸ—‘ï¸ Clear All Data
+                    🗑️ Clear All Data
                 </button>
             </div>
             </div>
@@ -132,7 +132,7 @@
                 <div class="flex gap-4">
                     <button onclick="showPromptGeneratorModal()" 
                             class="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition font-semibold">
-                        âš¡ Generate Checkpoint Request
+                        ⚡ Generate Checkpoint Request
                     </button>
                     <button onclick="showSaveCheckpointModal()" 
                             class="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition">
@@ -177,7 +177,7 @@
 
         <!-- Empty State -->
         <div id="emptyState" class="text-center py-16 hidden">
-            <div class="text-gray-400 text-6xl mb-4">ðŸ“‹</div>
+            <div class="text-gray-400 text-6xl mb-4">📋</div>
             <h3 class="text-xl font-semibold text-gray-700 mb-2">No Checkpoints Yet</h3>
             <p class="text-gray-600 mb-6">Checkpoints are restore points. Use them to preserve context, decisions, and next steps across sessions.</p>
             <button onclick="showProjectManagerModal()" class="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition">Create a Project</button>
@@ -195,7 +195,7 @@
                     <div class="flex gap-4">
                         <button onclick="showWorkLogGeneratorModal()" 
                                 class="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition font-semibold">
-                            âš¡ Generate Work Log Template
+                            ⚡ Generate Work Log Template
                         </button>
                         <button onclick="showSaveWorkLogModal()" 
                                 class="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition">
@@ -236,12 +236,12 @@
                 <div id="activeCheckpointFilterIndicator" class="mt-4 hidden">
                     <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center justify-between">
                         <div class="flex items-center gap-2">
-                            <span class="text-blue-800 font-medium">ðŸ” Filtered by checkpoint</span>
+                            <span class="text-blue-800 font-medium">🔍 Filtered by checkpoint</span>
                             <span id="activeCheckpointFilterLabel" class="text-blue-600 text-sm"></span>
                         </div>
                         <button onclick="clearCheckpointFilter()" 
                                 class="text-blue-600 hover:text-blue-800 text-sm font-medium">
-                            Clear Filter âœ•
+                            Clear Filter ✕
                         </button>
                     </div>
                 </div>
@@ -254,7 +254,7 @@
 
             <!-- Empty State -->
             <div id="worklogsEmptyState" class="text-center py-16 hidden">
-                <div class="text-gray-400 text-6xl mb-4">ðŸ“</div>
+                <div class="text-gray-400 text-6xl mb-4">📝</div>
                 <h3 class="text-xl font-semibold text-gray-700 mb-2">No Work Logs Yet</h3>
                 <p class="text-gray-600 mb-6">Work logs record what you completed and decided, without creating a restore point.</p>
                 <button onclick="showWorkLogGeneratorModal()" 
@@ -315,12 +315,12 @@
                 <div id="activeArtifactCheckpointFilterIndicator" class="mt-4 hidden">
                     <div class="bg-purple-50 border border-purple-200 rounded-lg p-3 flex items-center justify-between">
                         <div class="flex items-center gap-2">
-                            <span class="text-purple-800 font-medium">ðŸ” Filtered by checkpoint</span>
+                            <span class="text-purple-800 font-medium">🔍 Filtered by checkpoint</span>
                             <span id="activeArtifactCheckpointFilterLabel" class="text-purple-600 text-sm"></span>
                         </div>
                         <button onclick="clearArtifactCheckpointFilter()"
                                 class="text-purple-600 hover:text-purple-800 text-sm font-medium">
-                            Clear Filter âœ•
+                            Clear Filter ✕
                         </button>
                     </div>
                 </div>
@@ -333,7 +333,7 @@
 
             <!-- Empty State -->
             <div id="artifactsEmptyState" class="text-center py-16 hidden">
-                <div class="text-gray-400 text-6xl mb-4">ðŸ“Ž</div>
+                <div class="text-gray-400 text-6xl mb-4">📎</div>
                 <h3 class="text-xl font-semibold text-gray-700 mb-2">No Artifacts Yet</h3>
                 <p class="text-gray-600 mb-6">Artifacts track files, links, screenshots, and references tied to a project or checkpoint.</p>
                 <button onclick="showAddArtifactModal()" 
@@ -433,7 +433,7 @@
                     </div>
 
                     <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                        <h3 class="font-semibold text-blue-900 mb-2">ðŸ’¡ Tip: File Management</h3>
+                        <h3 class="font-semibold text-blue-900 mb-2">💡 Tip: File Management</h3>
                         <p class="text-sm text-blue-800">
                             This tool tracks <strong>metadata only</strong> - it doesn't store your actual files. 
                             Keep your files organized in a folder, and this tool helps you remember which files 
@@ -551,7 +551,7 @@
 
                     <!-- Instructions -->
                     <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                        <h3 class="font-semibold text-blue-900 mb-2">ðŸ“‹ How to use:</h3>
+                        <h3 class="font-semibold text-blue-900 mb-2">📋 How to use:</h3>
                         <ol class="text-sm text-blue-800 space-y-1 list-decimal list-inside">
                             <li>Copy the generated prompt below</li>
                             <li>Open a <strong>new AI chat session</strong></li>
@@ -569,7 +569,7 @@
                     </button>
                     <button onclick="copyGeneratedPrompt()" 
                             class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
-                        ðŸ“‹ Copy Prompt
+                        📋 Copy Prompt
                     </button>
                 </div>
             </div>
@@ -632,7 +632,7 @@
                     <div id="extractedArtifactsPreview" class="hidden">
                         <div class="bg-white border-2 border-indigo-200 rounded-lg p-4">
                             <h3 class="font-semibold text-sm mb-3 flex items-center gap-2">
-                                <span>ðŸ“Ž</span>
+                                <span>📎</span>
                                 <span>Extracted Artifacts</span>
                                 <span id="artifactCount" class="text-xs text-gray-500"></span>
                             </h3>
@@ -640,7 +640,7 @@
                                 <!-- Artifacts will be listed here -->
                             </div>
                             <p class="text-xs text-gray-500 mt-2">
-                                âœ“ Check to include | âœ— Uncheck to skip
+                                ✓ Check to include | ✗ Uncheck to skip
                             </p>
                         </div>
                     </div>
@@ -716,7 +716,7 @@
                 <div class="flex justify-between items-center mb-2">
                     <h2 class="text-2xl font-bold">Projects</h2>
                     <button onclick="closeProjectManagerModal()" class="text-gray-500 hover:text-gray-700 text-xl">
-                        âœ•
+                        ✕
                     </button>
                 </div>
 
@@ -762,7 +762,7 @@
                         <p class="text-sm text-gray-500 mt-1">Local, disciplined workflow support for multi-session AI projects.</p>
                     </div>
                     <button onclick="closeAboutModal()" class="text-gray-500 hover:text-gray-700 text-xl" title="Close">
-                        âœ•
+                        ✕
                     </button>
                 </div>
 
@@ -873,7 +873,7 @@
                     </div>
                     <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
                         <p class="text-sm text-yellow-800">
-                            âš ï¸ Warning: This will merge with existing data. Export current data first if needed.
+                            ⚠️ Warning: This will merge with existing data. Export current data first if needed.
                         </p>
                     </div>
                 </div>
@@ -943,7 +943,7 @@
                     </button>
                     <button onclick="performExport()" 
                             class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
-                        ðŸ“¤ Export
+                        📤 Export
                     </button>
                 </div>
             </div>
@@ -965,12 +965,12 @@
                 
                 <div class="space-y-4">
                     <div class="bg-red-50 border border-red-200 rounded-lg p-4">
-                        <p class="text-sm text-red-800 font-medium mb-2">âš ï¸ This will permanently delete:</p>
+                        <p class="text-sm text-red-800 font-medium mb-2">⚠️ This will permanently delete:</p>
                         <ul class="text-sm text-red-700 space-y-1 ml-4">
-                            <li id="clearDataProjectCount">â€¢ All projects</li>
-                            <li id="clearDataCheckpointCount">â€¢ All checkpoints</li>
-                            <li id="clearDataWorklogCount">â€¢ All work logs</li>
-                            <li id="clearDataArtifactCount">â€¢ All artifacts</li>
+                            <li id="clearDataProjectCount">• All projects</li>
+                            <li id="clearDataCheckpointCount">• All checkpoints</li>
+                            <li id="clearDataWorklogCount">• All work logs</li>
+                            <li id="clearDataArtifactCount">• All artifacts</li>
                         </ul>
                     </div>
 
@@ -1000,7 +1000,7 @@
                             id="clearAllDataButton"
                             disabled
                             class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition disabled:bg-gray-300 disabled:cursor-not-allowed">
-                        ðŸ—‘ï¸ Clear All Data
+                        🗑️ Clear All Data
                     </button>
                 </div>
             </div>
@@ -1031,24 +1031,24 @@
                 <div class="flex gap-4 justify-end">
                     <button onclick="editCurrentCheckpoint()" 
                             class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-                        âœï¸ Edit
+                        ✏️ Edit
                     </button>
                     <button onclick="generateRestorationPromptFromModal()" 
                             class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
-                        ðŸ”„ Generate Restoration Prompt
+                        🔄 Generate Restoration Prompt
                     </button>
                     <button onclick="copyCheckpointToClipboard()" 
                             class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
-                        ðŸ“‹ Copy to Clipboard
+                        📋 Copy to Clipboard
                     </button>
 
                     <button onclick="downloadCurrentCheckpointTxt()" 
                             class="px-6 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 transition">
-                        ðŸ“„ Download checkpoint (.txt)
+                        📄 Download checkpoint (.txt)
                     </button>
                     <button onclick="deleteCurrentCheckpoint()" 
                             class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
-                        ðŸ—‘ï¸ Delete
+                        🗑️ Delete
                     </button>
                 </div>
             </div>
@@ -1079,11 +1079,11 @@
                 <div class="flex justify-end gap-4">
                     <button onclick="copyRestorationPrompt()" 
                             class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
-                        ðŸ“‹ Copy Restoration Prompt
+                        📋 Copy Restoration Prompt
                     </button>
                     <button onclick="closeRestorationPromptModal()" 
                             class="px-6 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition">
-                        âœ• Close
+                        ✕ Close
                     </button>
                 </div>
             </div>
@@ -1094,7 +1094,7 @@
     <div id="workLogGeneratorModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
         <div class="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
             <div class="p-6">
-                <h2 class="text-2xl font-bold mb-4">âš¡ Generate Work Log Template</h2>
+                <h2 class="text-2xl font-bold mb-4">⚡ Generate Work Log Template</h2>
                 <p class="text-gray-600 mb-6">Create a structured template for documenting your progress</p>
                 
                 <div class="space-y-4">
@@ -1134,7 +1134,7 @@
                     </button>
                     <button onclick="copyGeneratedWorkLogPrompt()" 
                             class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
-                        ðŸ“‹ Copy Template
+                        📋 Copy Template
                     </button>
                 </div>
             </div>
@@ -1244,15 +1244,15 @@ Recommendations for next steps:
                 <div class="flex gap-4 justify-end">
                     <button onclick="editCurrentWorkLog()" 
                             class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-                        âœï¸ Edit
+                        ✏️ Edit
                     </button>
                     <button onclick="copyWorkLogToClipboard()" 
                             class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
-                        ðŸ“‹ Copy to Clipboard
+                        📋 Copy to Clipboard
                     </button>
                     <button onclick="deleteCurrentWorkLog()" 
                             class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">
-                        ðŸ—‘ï¸ Delete
+                        🗑️ Delete
                     </button>
              
         
@@ -1416,12 +1416,12 @@ ${taskList.trim()}`;
                 let base = `Create a task-specific checkpoint for a new subtask.
 
 Include:
-â€“ A structured task instruction (the Opening Phrase for this subtask)
-â€“ The minimal context this subtask needs
-â€“ What the subtask must accomplish or produce
-â€“ Any constraints, definitions, or reference materials needed
-â€“ Success criteria for the subtask
-â€“ Any risks, ambiguities, or decisions expected during the task
+– A structured task instruction (the Opening Phrase for this subtask)
+– The minimal context this subtask needs
+– What the subtask must accomplish or produce
+– Any constraints, definitions, or reference materials needed
+– Success criteria for the subtask
+– Any risks, ambiguities, or decisions expected during the task
 
 Task focus: ${taskFocus}
 Parent project: ${projectName}`;
@@ -1445,12 +1445,12 @@ This task-specific checkpoint launches a separate subtask and does not modify th
             let template = `Create a Work Log that summarizes the completed work in this session.
 
 Include:
-â€“ What was done in this session
-â€“ What was produced (the deliverable), or where it can be found
-â€“ Key decisions made
-â€“ Any changes to assumptions, definitions, or understanding
-â€“ Any risks, dependencies, or open questions
-â€“ Recommendations for how the main project should proceed
+– What was done in this session
+– What was produced (the deliverable), or where it can be found
+– Key decisions made
+– Any changes to assumptions, definitions, or understanding
+– Any risks, dependencies, or open questions
+– Recommendations for how the main project should proceed
 
 Write the Work Log so it can be copied into the master thread and understood without referencing the rest of this conversation.
 
@@ -1798,7 +1798,7 @@ updateProjectDropdowns(document.getElementById('worklogProject'));
 
             function normalizeLine(line) {
                 if (line.startsWith('- ')) return line.substring(2).trim();
-                if (line.startsWith('â€¢ ')) return line.substring(2).trim();
+                if (line.startsWith('• ')) return line.substring(2).trim();
                 return line;
             }
 
@@ -1814,7 +1814,7 @@ updateProjectDropdowns(document.getElementById('worklogProject'));
 
                 // If the paste includes a title-like prefix ("Work Log - ...")
                 if (lower.startsWith('work log')) {
-                    candidate = line.replace(/^work\s*log\s*[-â€“:]+\s*/i, '').trim();
+                    candidate = line.replace(/^work\s*log\s*[-–:]+\s*/i, '').trim();
                     if (candidate) break;
                 }
 
@@ -1828,7 +1828,7 @@ updateProjectDropdowns(document.getElementById('worklogProject'));
             if (!candidate) return;
 
             const maxLen = 80;
-            if (candidate.length > maxLen) candidate = candidate.substring(0, maxLen - 1) + 'â€¦';
+            if (candidate.length > maxLen) candidate = candidate.substring(0, maxLen - 1) + '…';
             titleInput.value = candidate;
         }
 
@@ -1892,7 +1892,7 @@ updateProjectDropdowns(document.getElementById('worklogProject'));
                         checkpointInfo = `<button onclick="viewCheckpoint('${wl.projectId}', '${wl.checkpointId}')" 
                                                   class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded hover:bg-blue-200 transition cursor-pointer"
                                                   title="View checkpoint">
-                                            ðŸ”— Linked to: ${escapeHtml(cpLabel)}
+                                            🔗 Linked to: ${escapeHtml(cpLabel)}
                                           </button>`;
                     }
                 }
@@ -1904,7 +1904,7 @@ updateProjectDropdowns(document.getElementById('worklogProject'));
                                 <h3 class="text-lg font-semibold text-gray-900">${escapeHtml(wl.title)}</h3>
                                 <p class="text-sm text-gray-600 mt-1">
                                     <span class="font-medium">${escapeHtml(projectName)}</span>
-                                    <span class="mx-2">â€¢</span>
+                                    <span class="mx-2">•</span>
                                     <span>${formatDate(wl.timestamp)}</span>
                                 </p>
                                 ${checkpointInfo ? `<p class="mt-2">${checkpointInfo}</p>` : ''}
@@ -1922,15 +1922,15 @@ updateProjectDropdowns(document.getElementById('worklogProject'));
                             </button>
                             <button onclick="editWorkLog('${wl.id}')" 
                                     class="text-sm px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
-                                âœï¸ Edit
+                                ✏️ Edit
                             </button>
                             <button onclick="copyWorkLog('${wl.id}')" 
                                     class="text-sm px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition">
-                                ðŸ“‹ Copy
+                                📋 Copy
                             </button>
                             <button onclick="deleteWorkLog('${wl.id}')" 
                                     class="text-sm px-4 py-2 bg-red-100 text-red-700 rounded hover:bg-red-200 transition">
-                                ðŸ—‘ï¸ Delete
+                                🗑️ Delete
                             </button>
                         </div>
                     </div>
@@ -2062,12 +2062,12 @@ updateProjectDropdowns(document.getElementById('worklogProject'));
 
             document.getElementById('viewWorkLogTitle').textContent = worklog.title;
             
-            let meta = `${projectName} â€¢ ${formatDate(worklog.timestamp)}`;
+            let meta = `${projectName} • ${formatDate(worklog.timestamp)}`;
             if (worklog.checkpointId && project) {
                 const checkpoint = project.checkpoints.find(cp => cp.id === worklog.checkpointId);
                 if (checkpoint) {
                     const cpLabel = getCheckpointLabel(checkpoint);
-                    meta += ` â€¢ Linked to: ${cpLabel}`;
+                    meta += ` • Linked to: ${cpLabel}`;
                 }
             }
             document.getElementById('viewWorkLogMeta').textContent = meta;
@@ -2238,7 +2238,7 @@ function showProjectManagerModal() {
                     <div>
                         <div class="font-medium text-gray-900">${escapeHtml(project.name)}</div>
                         <div class="text-xs text-gray-500">
-                            ${checkpointCount} checkpoints â€¢ ${worklogCount} work logs â€¢ Last activity: ${lastActivity}
+                            ${checkpointCount} checkpoints • ${worklogCount} work logs • Last activity: ${lastActivity}
                         </div>
                     </div>
                     <div class="flex items-center gap-2">
@@ -2411,7 +2411,7 @@ function showProjectManagerModal() {
                     renderCheckpoints();
                     
                     if (validation.isComplete) {
-                        showNotification('Checkpoint updated successfully! âœ“', 'success');
+                        showNotification('Checkpoint updated successfully! ✓', 'success');
                     } else {
                         showNotification('Checkpoint updated (incomplete - missing sections)', 'warning');
                     }
@@ -2459,7 +2459,7 @@ function showProjectManagerModal() {
             renderCheckpoints();
             
             if (validation.isComplete) {
-                showNotification('Checkpoint saved successfully! âœ“', 'success');
+                showNotification('Checkpoint saved successfully! ✓', 'success');
             } else {
                 showNotification('Checkpoint saved (incomplete - missing sections)', 'warning');
             }
@@ -2623,8 +2623,8 @@ function showProjectManagerModal() {
             let html = `
                 <div class="flex items-center gap-2 mb-2">
                     ${validation.isComplete 
-                        ? '<span class="text-green-600">âœ“ Complete</span>' 
-                        : '<span class="text-yellow-600">âš  Incomplete</span>'}
+                        ? '<span class="text-green-600">✓ Complete</span>' 
+                        : '<span class="text-yellow-600">⚠ Incomplete</span>'}
                     <span class="text-gray-600">(${validation.foundCount}/${validation.totalCount} sections found)</span>
                 </div>
             `;
@@ -2632,7 +2632,7 @@ function showProjectManagerModal() {
             if (!validation.isComplete) {
                 html += '<div class="text-sm text-gray-600 mt-2">Missing sections:</div>';
                 validation.missingSections.forEach(section => {
-                    html += `<div class="text-sm text-red-600">âœ— ${section}</div>`;
+                    html += `<div class="text-sm text-red-600">✗ ${section}</div>`;
                 });
             } else {
                 html += '<div class="text-sm text-green-600">All required sections present!</div>';
@@ -2782,7 +2782,7 @@ const project = getProject(projectId);
                 if (line.toLowerCase().match(/^files?\s+(we\s+)?used/i)) return;
                 
                 // Remove common bullet formats
-                const cleanLine = line.replace(/^[-â€¢*âœ“\d]+[.)\s]+/, '').trim();
+                const cleanLine = line.replace(/^[-•*✓\d]+[.)\s]+/, '').trim();
                 if (!cleanLine) return;
                 
                 // Try to find actual filename with extension
@@ -2825,7 +2825,7 @@ const project = getProject(projectId);
                 if (!line) continue;
                 
                 // Allow headers like "FILES WE USED", "Files used", "Artifacts", with optional punctuation
-                if (headerRegex.test(line.replace(/[:\-â€“â€”]+$/, ''))) {
+                if (headerRegex.test(line.replace(/[:\-–—]+$/, ''))) {
                     startIndex = i + 1;
                     break;
                 }
@@ -2846,7 +2846,7 @@ const project = getProject(projectId);
                 }
                 
                 // Detect obvious new top-level headings (all caps words, often the other checkpoint sections)
-                if (/^[A-Z][A-Z0-9\s\-â€“â€”]+$/.test(trimmed) && !/^[\-â€¢*]/.test(trimmed)) {
+                if (/^[A-Z][A-Z0-9\s\-–—]+$/.test(trimmed) && !/^[\-•*]/.test(trimmed)) {
                     break;
                 }
                 
@@ -3003,14 +3003,14 @@ const project = getProject(projectId);
                 const projectName = project ? project.name : 'Unknown Project';
                 
                 const typeIcons = {
-                    'document': 'ðŸ“„',
-                    'image': 'ðŸ–¼ï¸',
-                    'data': 'ðŸ“Š',
-                    'code': 'ðŸ’»',
-                    'other': 'ðŸ“Ž'
+                    'document': '📄',
+                    'image': '🖼️',
+                    'data': '📊',
+                    'code': '💻',
+                    'other': '📎'
                 };
                 
-                const icon = typeIcons[art.type] || 'ðŸ“Ž';
+                const icon = typeIcons[art.type] || '📎';
 
                 return `
                     <div class="checkpoint-card bg-white rounded-lg shadow-md p-6">
@@ -3030,19 +3030,19 @@ const project = getProject(projectId);
                                     </p>
                                 ` : ''}
                                 <p class="text-xs text-gray-500">
-                                    ${escapeHtml(projectName)} â€¢ v${art.version} â€¢ ${formatDate(art.created)}
+                                    ${escapeHtml(projectName)} • v${art.version} • ${formatDate(art.created)}
                                 </p>
                             </div>
                             <div class="flex gap-2">
                                 <button onclick="editArtifact('${art.id}')" 
                                         class="text-blue-600 hover:text-blue-800 text-sm"
                                         title="Edit artifact">
-                                    âœï¸
+                                    ✏️
                                 </button>
                                 <button onclick="deleteArtifact('${art.id}')" 
                                         class="text-red-600 hover:text-red-800 text-sm"
                                         title="Delete artifact">
-                                    ðŸ—‘ï¸
+                                    🗑️
                                 </button>
                             </div>
                         </div>
@@ -3050,7 +3050,7 @@ const project = getProject(projectId);
                         ${art.linkedCheckpoints.length > 0 ? `
                             <div class="mt-3 pt-3 border-t border-gray-200">
                                 <p class="text-xs text-gray-600">
-                                    ðŸ”— Linked to ${art.linkedCheckpoints.length} checkpoint(s)
+                                    🔗 Linked to ${art.linkedCheckpoints.length} checkpoint(s)
                                 </p>
                             </div>
                         ` : ''}
@@ -3058,7 +3058,7 @@ const project = getProject(projectId);
                         ${art.externalPath ? `
                             <div class="mt-2">
                                 <p class="text-xs text-gray-500">
-                                    ðŸ“ ${escapeHtml(art.externalPath)}
+                                    📁 ${escapeHtml(art.externalPath)}
                                 </p>
                             </div>
                         ` : ''}
@@ -3248,7 +3248,7 @@ modal.classList.remove('hidden');
                                 ${escapeHtml(getCheckpointLabel(cp))}
                             </h3>
                             <p class="text-sm text-gray-500">
-                                ${escapeHtml(cp.projectName)} â€¢ ${formatDate(cp.timestamp)}
+                                ${escapeHtml(cp.projectName)} • ${formatDate(cp.timestamp)}
                             </p>
                         </div>
                         <div class="flex items-center gap-2">
@@ -3256,7 +3256,7 @@ modal.classList.remove('hidden');
                                 <button onclick="event.stopPropagation(); filterWorkLogsByCheckpoint('${cp.id}')" 
                                         class="text-xs bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600 transition"
                                         title="View ${workLogCount} linked work log${workLogCount > 1 ? 's' : ''}">
-                                    ðŸ“ ${workLogCount} log${workLogCount > 1 ? 's' : ''}
+                                    📝 ${workLogCount} log${workLogCount > 1 ? 's' : ''}
                                 </button>
                             ` : ''}
                             
@@ -3266,13 +3266,13 @@ modal.classList.remove('hidden');
                                     <button onclick="event.stopPropagation(); filterArtifactsByCheckpoint('${cp.id}')"
                                             class="text-xs bg-purple-500 text-white px-2 py-1 rounded hover:bg-purple-600 transition"
                                             title="View ${artifactCount} linked artifact${artifactCount > 1 ? 's' : ''}">
-                                        ðŸ“Ž ${artifactCount} art${artifactCount > 1 ? 's' : ''}
+                                        📎 ${artifactCount} art${artifactCount > 1 ? 's' : ''}
                                     </button>
                                 ` : '';
                             })()}
 ${cp.validation.isComplete 
-                                ? '<span class="text-green-600 text-sm">âœ“ Complete</span>' 
-                                : '<span class="text-yellow-600 text-sm">âš  Incomplete</span>'}
+                                ? '<span class="text-green-600 text-sm">✓ Complete</span>' 
+                                : '<span class="text-yellow-600 text-sm">⚠ Incomplete</span>'}
                         </div>
                     </div>
                     <div class="text-sm text-gray-600 line-clamp-3 mb-3" onclick="viewCheckpoint('${cp.projectId}', '${cp.id}')" style="cursor: pointer;">
@@ -3281,11 +3281,11 @@ ${cp.validation.isComplete
                     <div class="flex justify-between pt-2 border-t border-gray-100">
                         <button onclick="event.stopPropagation(); editCheckpoint('${cp.projectId}', '${cp.id}')" 
                                 class="text-sm px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
-                            âœï¸ Edit
+                            ✏️ Edit
                         </button>
                         <button onclick="event.stopPropagation(); copyRestorationPrompt('${cp.projectId}', '${cp.id}')" 
                                 class="btn-restore-card">
-                            ðŸ”„ Restore prompt
+                            🔄 Restore prompt
                         </button>
                     </div>
                 </div>
@@ -3306,7 +3306,7 @@ ${cp.validation.isComplete
                 getCheckpointLabel(checkpoint);
             
             document.getElementById('viewCheckpointMeta').textContent = 
-                `${project.name} â€¢ ${formatDate(checkpoint.timestamp)}`;
+                `${project.name} • ${formatDate(checkpoint.timestamp)}`;
 
             document.getElementById('viewCheckpointContent').textContent = checkpoint.content;
 
@@ -3336,7 +3336,7 @@ ${cp.validation.isComplete
             const content = document.getElementById('viewCheckpointContent').textContent;
             
             navigator.clipboard.writeText(content).then(() => {
-                showNotification('Copied to clipboard! âœ“', 'success');
+                showNotification('Copied to clipboard! ✓', 'success');
             }).catch(err => {
                 // Fallback for older browsers
                 const textarea = document.createElement('textarea');
@@ -3345,7 +3345,7 @@ ${cp.validation.isComplete
                 textarea.select();
                 document.execCommand('copy');
                 document.body.removeChild(textarea);
-                showNotification('Copied to clipboard! âœ“', 'success');
+                showNotification('Copied to clipboard! ✓', 'success');
             });
         }
 
@@ -3401,10 +3401,10 @@ ${cp.validation.isComplete
             if (exportOption === 'all') {
                 const totalCheckpoints = currentData.projects.reduce((sum, p) => sum + (p.checkpoints ? p.checkpoints.length : 0), 0);
                 preview.innerHTML = `
-                    â€¢ ${currentData.projects.length} project${currentData.projects.length !== 1 ? 's' : ''}<br>
-                    â€¢ ${totalCheckpoints} checkpoint${totalCheckpoints !== 1 ? 's' : ''}<br>
-                    â€¢ ${currentData.worklogs.length} work log${currentData.worklogs.length !== 1 ? 's' : ''}<br>
-                    â€¢ ${currentData.artifacts.length} artifact${currentData.artifacts.length !== 1 ? 's' : ''}
+                    • ${currentData.projects.length} project${currentData.projects.length !== 1 ? 's' : ''}<br>
+                    • ${totalCheckpoints} checkpoint${totalCheckpoints !== 1 ? 's' : ''}<br>
+                    • ${currentData.worklogs.length} work log${currentData.worklogs.length !== 1 ? 's' : ''}<br>
+                    • ${currentData.artifacts.length} artifact${currentData.artifacts.length !== 1 ? 's' : ''}
                 `;
             } else {
                 const selectedCheckboxes = document.querySelectorAll('.export-project-checkbox:checked');
@@ -3419,10 +3419,10 @@ ${cp.validation.isComplete
                     const totalArtifacts = currentData.artifacts.filter(art => selectedIds.includes(art.projectId)).length;
                     
                     preview.innerHTML = `
-                        â€¢ ${selectedProjects.length} project${selectedProjects.length !== 1 ? 's' : ''}<br>
-                        â€¢ ${totalCheckpoints} checkpoint${totalCheckpoints !== 1 ? 's' : ''}<br>
-                        â€¢ ${totalWorklogs} work log${totalWorklogs !== 1 ? 's' : ''}<br>
-                        â€¢ ${totalArtifacts} artifact${totalArtifacts !== 1 ? 's' : ''}
+                        • ${selectedProjects.length} project${selectedProjects.length !== 1 ? 's' : ''}<br>
+                        • ${totalCheckpoints} checkpoint${totalCheckpoints !== 1 ? 's' : ''}<br>
+                        • ${totalWorklogs} work log${totalWorklogs !== 1 ? 's' : ''}<br>
+                        • ${totalArtifacts} artifact${totalArtifacts !== 1 ? 's' : ''}
                     `;
                 }
             }
@@ -3480,10 +3480,10 @@ ${cp.validation.isComplete
             
             // Update counts
             const totalCheckpoints = currentData.projects.reduce((sum, p) => sum + (p.checkpoints ? p.checkpoints.length : 0), 0);
-            document.getElementById('clearDataProjectCount').textContent = `â€¢ ${currentData.projects.length} project${currentData.projects.length !== 1 ? 's' : ''}`;
-            document.getElementById('clearDataCheckpointCount').textContent = `â€¢ ${totalCheckpoints} checkpoint${totalCheckpoints !== 1 ? 's' : ''}`;
-            document.getElementById('clearDataWorklogCount').textContent = `â€¢ ${currentData.worklogs.length} work log${currentData.worklogs.length !== 1 ? 's' : ''}`;
-            document.getElementById('clearDataArtifactCount').textContent = `â€¢ ${currentData.artifacts.length} artifact${currentData.artifacts.length !== 1 ? 's' : ''}`;
+            document.getElementById('clearDataProjectCount').textContent = `• ${currentData.projects.length} project${currentData.projects.length !== 1 ? 's' : ''}`;
+            document.getElementById('clearDataCheckpointCount').textContent = `• ${totalCheckpoints} checkpoint${totalCheckpoints !== 1 ? 's' : ''}`;
+            document.getElementById('clearDataWorklogCount').textContent = `• ${currentData.worklogs.length} work log${currentData.worklogs.length !== 1 ? 's' : ''}`;
+            document.getElementById('clearDataArtifactCount').textContent = `• ${currentData.artifacts.length} artifact${currentData.artifacts.length !== 1 ? 's' : ''}`;
             
             // Reset confirmation input
             document.getElementById('clearDataConfirmation').value = '';
@@ -3542,7 +3542,7 @@ const confirmInput = document.getElementById('clearDataConfirmation');
 
                 // If the modal already includes an X button, do not add another
                 const hasXButton = Array.from(box.querySelectorAll('button'))
-                    .some(b => ((b.textContent || '').trim() === 'âœ•'));
+                    .some(b => ((b.textContent || '').trim() === '✕'));
                 if (hasXButton) return;
 
                 const btn = document.createElement('button');
@@ -3550,7 +3550,7 @@ const confirmInput = document.getElementById('clearDataConfirmation');
                 btn.setAttribute('type', 'button');
                 btn.setAttribute('aria-label', 'Close');
                 btn.className = 'absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-xl';
-                btn.textContent = 'âœ•';
+                btn.textContent = '✕';
                 btn.addEventListener('click', () => closeModalById(modal.id));
                 box.appendChild(btn);
             });
@@ -3873,7 +3873,7 @@ ${checkpoint.content}
             
             // Show in modal
             document.getElementById('restorationPromptTitle').textContent = getCheckpointLabel(checkpoint);
-            document.getElementById('restorationPromptMeta').textContent = `${project.name} â€¢ ${formatDate(checkpoint.timestamp)}`;
+            document.getElementById('restorationPromptMeta').textContent = `${project.name} • ${formatDate(checkpoint.timestamp)}`;
             document.getElementById('restorationPromptText').textContent = restorationPrompt;
             document.getElementById('restorationPromptModal').classList.remove('hidden');
             
@@ -3997,4 +3997,4 @@ ${checkpoint.content}
 </script>
 
 </body>
-</html>
+                </html>
